@@ -7,7 +7,10 @@ metadata:
   namespace: claude-queue
 spec:
   accessModes: ["ReadWriteOnce"]
-  storageClassName: local-path
+  # Longhorn (cross-node-replicated, homelab-infra/cluster/11-longhorn-values.yaml) instead of
+  # local-path - survives a node dying, even though the BullMQ job state itself is transient
+  # (Postgres is the source of truth either way).
+  storageClassName: longhorn
   resources:
     requests:
       storage: 1Gi
