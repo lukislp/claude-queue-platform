@@ -1,5 +1,9 @@
 # Claude Queue Platform
 
+[![CI/CD](https://github.com/lukislp/claude-queue-platform/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/lukislp/claude-queue-platform/actions/workflows/ci-cd.yml)
+[![Release](https://img.shields.io/github/v/release/lukislp/claude-queue-platform)](https://github.com/lukislp/claude-queue-platform/releases)
+[![Node](https://img.shields.io/badge/node-20%2B-brightgreen)](.github/workflows/ci-cd.yml)
+
 Multi-User-Plattform mit eigener Authentifizierung, in der jeder Nutzer Projekte anlegt und
 Tasks in eine Queue schreibt, die automatisch abgearbeitet wird - inklusive automatischem
 Warten und Fortsetzen bei Rate-/Usage-Limits. Pro Nutzer frei wählbar: eigener Anthropic
