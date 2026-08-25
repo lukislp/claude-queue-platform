@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/lukislp/claude-queue-platform/compare/v1.1.0...v1.1.1) (2026-08-25)
+
+
+### Bug Fixes
+
+* make task dispatch atomic across multiple devices ([55e5a17](https://github.com/lukislp/claude-queue-platform/commit/55e5a1780b35bd9786cefae70f9c0a52a6c0a6ff))
+
 # [1.1.0](https://github.com/lukislp/claude-queue-platform/compare/v1.0.0...v1.1.0) (2026-08-25)
 
 
