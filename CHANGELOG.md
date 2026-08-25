@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/lukislp/claude-queue-platform/compare/v1.2.1...v1.2.2) (2026-08-25)
+
+
+### Bug Fixes
+
+* migrate redis-data PVC to Longhorn for cross-node replication ([23d308d](https://github.com/lukislp/claude-queue-platform/commit/23d308d4457f94439e68c569b0932a487ff34f45))
+
 ## [1.2.1](https://github.com/lukislp/claude-queue-platform/compare/v1.2.0...v1.2.1) (2026-08-25)
 
 
