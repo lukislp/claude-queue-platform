@@ -86,6 +86,7 @@ export interface Task {
   startedAt: string | null;
   completedAt: string | null;
   logs?: { id: string; timestamp: string; message: string }[];
+  outputFiles?: { path: string; size: number; mtimeMs: number }[] | null;
 }
 
 export interface ClaudeConnection {

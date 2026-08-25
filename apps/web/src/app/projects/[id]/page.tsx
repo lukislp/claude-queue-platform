@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState, FormEvent, useCallback } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
-import { Button, Card, Textarea } from '@/components/ui';
+import { Button, Card, Input, Textarea } from '@/components/ui';
 import { TaskTicket } from '@/components/task-ticket';
 import { api, ModelOption, Project, Task, TaskStatus } from '@/lib/api';
 
@@ -22,12 +22,17 @@ import { getSocket } from '@/lib/socket';
 
 export default function ProjectPage() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [prompt, setPrompt] = useState('');
   const [model, setModel] = useState('');
   const [models, setModels] = useState<ModelOption[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [savingProject, setSavingProject] = useState(false);
 
   const loadTasks = useCallback(async () => {
     const list = await api.get<Task[]>(`/tasks?projectId=${id}`);
@@ -83,9 +88,39 @@ export default function ProjectPage() {
     setTasks((prev) => prev.filter((t) => t.id !== taskId));
   }
 
-  async function handleTaskAction(taskId: string, action: 'cancel' | 'pause' | 'resume') {
+  async function handleTaskAction(taskId: string, action: 'cancel' | 'pause' | 'resume' | 'retry') {
     const updated = await api.post<Task>(`/tasks/${taskId}/${action}`);
     setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, ...updated } : t)));
+  }
+
+  function startEditingProject() {
+    if (!project) return;
+    setEditName(project.name);
+    setEditDescription(project.description ?? '');
+    setEditing(true);
+  }
+
+  async function handleSaveProject(e: FormEvent) {
+    e.preventDefault();
+    if (!editName.trim()) return;
+    setSavingProject(true);
+    try {
+      const updated = await api.patch<Project>(`/projects/${id}`, {
+        name: editName,
+        description: editDescription,
+      });
+      setProject((prev) => (prev ? { ...prev, ...updated } : updated));
+      setEditing(false);
+    } finally {
+      setSavingProject(false);
+    }
+  }
+
+  async function handleDeleteProject() {
+    if (!project) return;
+    if (!window.confirm(`"${project.name}" wirklich löschen? Alle Tasks darin gehen dabei verloren.`)) return;
+    await api.delete(`/projects/${id}`);
+    router.push('/dashboard');
   }
 
   const ordered = [...tasks].sort((a, b) => {
@@ -100,14 +135,47 @@ export default function ProjectPage() {
   return (
     <AppShell>
       <div className="mb-6">
-        <h1 className="text-xl font-semibold">{project?.name ?? '…'}</h1>
-        {project?.description && (
-          <p className="text-sm text-[var(--color-text-muted)]">{project.description}</p>
-        )}
-        {project && (
-          <p className="mt-1 font-[family-name:var(--font-mono)] text-[11px] text-[var(--color-text-muted)]">
-            Arbeitsordner: {project.workingDirectory}
-          </p>
+        {editing ? (
+          <form onSubmit={handleSaveProject} className="max-w-md space-y-2">
+            <Input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Projektname" />
+            <Input
+              value={editDescription}
+              onChange={(e) => setEditDescription(e.target.value)}
+              placeholder="Beschreibung (optional)"
+            />
+            <div className="flex gap-2">
+              <Button type="submit" disabled={savingProject || !editName.trim()}>
+                {savingProject ? 'Speichere …' : 'Speichern'}
+              </Button>
+              <Button type="button" variant="secondary" onClick={() => setEditing(false)}>
+                Abbrechen
+              </Button>
+            </div>
+          </form>
+        ) : (
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h1 className="text-xl font-semibold">{project?.name ?? '…'}</h1>
+              {project?.description && (
+                <p className="text-sm text-[var(--color-text-muted)]">{project.description}</p>
+              )}
+              {project && (
+                <p className="mt-1 font-[family-name:var(--font-mono)] text-[11px] text-[var(--color-text-muted)]">
+                  Arbeitsordner: {project.workingDirectory}
+                </p>
+              )}
+            </div>
+            {project && (
+              <div className="flex shrink-0 gap-3 text-xs text-[var(--color-text-muted)]">
+                <button onClick={startEditingProject} className="hover:text-[var(--color-text)]">
+                  Bearbeiten
+                </button>
+                <button onClick={handleDeleteProject} className="hover:text-[var(--color-failed)]">
+                  Löschen
+                </button>
+              </div>
+            )}
+          </div>
         )}
       </div>
 
@@ -156,6 +224,7 @@ export default function ProjectPage() {
               onCancel={(id) => handleTaskAction(id, 'cancel')}
               onPause={(id) => handleTaskAction(id, 'pause')}
               onResume={(id) => handleTaskAction(id, 'resume')}
+              onRetry={(id) => handleTaskAction(id, 'retry')}
             />
           ))}
         </div>

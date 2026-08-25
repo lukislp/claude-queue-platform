@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { DbModule } from './db/db.module';
+import { HealthModule } from './health/health.module';
 import { AuthModule } from './auth/auth.module';
 import { ProjectsModule } from './projects/projects.module';
 import { ClaudeConnectionModule } from './claude-connection/claude-connection.module';
@@ -13,6 +14,7 @@ import { RealtimeModule } from './realtime/realtime.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     DbModule,
+    HealthModule,
     AuthModule,
     ProjectsModule,
     ClaudeConnectionModule,

@@ -143,6 +143,33 @@ export class TasksService {
     return updated;
   }
 
+  /** Reiht einen fehlgeschlagenen Task erneut ein; eine vorhandene Claude-Session wird dabei fortgesetzt. */
+  async retry(userId: string, taskId: string) {
+    const task = await this.loadOwned(userId, taskId);
+    if (task.status !== 'FAILED') {
+      throw new BadRequestException('Nur fehlgeschlagene Tasks können erneut gestartet werden.');
+    }
+    const result = await this.db.query(
+      `UPDATE tasks SET status = 'QUEUED', error = NULL, result = NULL, output_files = NULL,
+        assigned_device_id = NULL, started_at = NULL, completed_at = NULL, retry_at = NULL
+       WHERE id = $1 RETURNING *`,
+      [taskId],
+    );
+    const updated = toCamel(result.rows[0]);
+    this.realtime.emitTaskUpdate(userId, updated);
+
+    const connResult = await this.db.query(
+      'SELECT type FROM claude_connections WHERE user_id = $1',
+      [userId],
+    );
+    if (connResult.rows[0]?.type === 'LOCAL_CLI') {
+      await this.realtime.tryDispatchForUser(userId);
+    } else {
+      await this.queueManager.enqueue(userId, taskId);
+    }
+    return updated;
+  }
+
   async remove(userId: string, taskId: string) {
     const taskResult = await this.db.query('SELECT * FROM tasks WHERE id = $1', [taskId]);
     const task = taskResult.rows[0];

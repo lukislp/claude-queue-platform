@@ -59,18 +59,21 @@ spec:
             limits:
               cpu: 500m
               memory: 512Mi
-          # TCP probes: the API exposes no dedicated health endpoint yet.
+          # /health checks DB connectivity, not just that the process is listening.
           startupProbe:
-            tcpSocket:
+            httpGet:
+              path: /health
               port: http
             periodSeconds: 5
             failureThreshold: 30 # DB migrations run at boot
           livenessProbe:
-            tcpSocket:
+            httpGet:
+              path: /health
               port: http
             periodSeconds: 10
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /health
               port: http
             periodSeconds: 5
 ---

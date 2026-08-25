@@ -42,6 +42,12 @@ function formatTime(iso: string | null) {
   return new Date(iso).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'medium' });
 }
 
+function formatSize(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 /** Übersetzt eine rohe stream-json-Logzeile in eine lesbare Darstellung (null = ausblenden). */
 function describeLogLine(message: string): string | null {
   if (message.startsWith('[stderr]')) return message;
@@ -149,10 +155,11 @@ interface TaskTicketProps {
   onCancel?: (id: string) => void;
   onPause?: (id: string) => void;
   onResume?: (id: string) => void;
+  onRetry?: (id: string) => void;
 }
 
 /** Eine Task-Zeile im "Ticket/Manifest"-Look: Stub mit kurzer ID links, Inhalt rechts. */
-export function TaskTicket({ task, onDelete, onCancel, onPause, onResume }: TaskTicketProps) {
+export function TaskTicket({ task, onDelete, onCancel, onPause, onResume, onRetry }: TaskTicketProps) {
   const [showLogs, setShowLogs] = useState(false);
   const cfg = STATUS_CONFIG[task.status];
   return (
@@ -189,6 +196,21 @@ export function TaskTicket({ task, onDelete, onCancel, onPause, onResume }: Task
             {task.result}
           </p>
         )}
+        {task.outputFiles && task.outputFiles.length > 0 && (
+          <div className="mt-2 rounded-md border border-dashed border-[var(--color-border)] px-2 py-1.5">
+            <p className="mb-1 text-[10px] uppercase tracking-wide text-[var(--color-text-muted)]">
+              Erstellte/geänderte Dateien
+            </p>
+            <ul className="space-y-0.5 font-[family-name:var(--font-mono)] text-xs text-[var(--color-text)]">
+              {task.outputFiles.map((f) => (
+                <li key={f.path} className="flex justify-between gap-3">
+                  <span className="truncate">{f.path}</span>
+                  <span className="shrink-0 text-[var(--color-text-muted)]">{formatSize(f.size)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         {(() => {
           const isActive = ['QUEUED', 'RUNNING', 'PAUSED_RATE_LIMIT'].includes(task.status);
           return (
@@ -221,6 +243,14 @@ export function TaskTicket({ task, onDelete, onCancel, onPause, onResume }: Task
                   className="text-[var(--color-text-muted)] hover:text-[var(--color-failed)]"
                 >
                   ✖ Abbrechen
+                </button>
+              )}
+              {task.status === 'FAILED' && onRetry && (
+                <button
+                  onClick={() => onRetry(task.id)}
+                  className="text-[var(--color-text-muted)] hover:text-[var(--color-running)]"
+                >
+                  🔁 Erneut versuchen
                 </button>
               )}
               {!isActive && task.status !== 'PAUSED' && onDelete && (

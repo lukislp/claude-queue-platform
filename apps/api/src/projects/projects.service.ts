@@ -5,7 +5,7 @@ import { toCamel, toCamelList } from '../db/mappers';
 import { CreateProjectDto, UpdateProjectDto } from './dto/project.dto';
 
 /** Macht aus einem Projektnamen einen dateisystemtauglichen Ordnernamen. */
-function toFolderSlug(name: string): string {
+export function toFolderSlug(name: string): string {
   const slug = name
     .toLowerCase()
     .replace(/[äöüß]/g, (c) => ({ ä: 'ae', ö: 'oe', ü: 'ue', ß: 'ss' }[c] ?? c))

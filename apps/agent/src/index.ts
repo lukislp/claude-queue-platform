@@ -6,6 +6,7 @@ import * as fs from 'fs';
 import { spawn } from 'child_process';
 import { loadConfig, saveConfig, AgentConfig, configPath } from './config';
 import { runClaudeTask, resolveClaudeInvocation, abortRun } from './claude-runner';
+import { listOutputFiles } from './list-output-files';
 
 // Ausstehende Rate-Limit-Retries pro Task, damit sie bei Abbruch/Pause storniert werden können.
 const pendingRetries = new Map<string, NodeJS.Timeout>();
@@ -71,6 +72,14 @@ interface TaskAssignPayload {
   model?: string;
 }
 
+function safeListOutputFiles(cwd: string) {
+  try {
+    return listOutputFiles(cwd);
+  } catch {
+    return undefined;
+  }
+}
+
 async function handleTask(socket: Socket, config: AgentConfig, payload: TaskAssignPayload) {
   const cwd = path.isAbsolute(payload.workingDirectory)
     ? payload.workingDirectory
@@ -106,6 +115,7 @@ async function handleTask(socket: Socket, config: AgentConfig, payload: TaskAssi
       status: 'COMPLETED',
       result: result.result,
       claudeSessionId: result.sessionId,
+      files: safeListOutputFiles(cwd),
     });
     console.log(`[Task ${payload.taskId}] Abgeschlossen.`);
     return;
@@ -136,6 +146,7 @@ async function handleTask(socket: Socket, config: AgentConfig, payload: TaskAssi
     status: 'FAILED',
     error: result.error,
     claudeSessionId: result.sessionId,
+    files: safeListOutputFiles(cwd),
   });
   console.log(`[Task ${payload.taskId}] Fehlgeschlagen: ${result.error}`);
 }

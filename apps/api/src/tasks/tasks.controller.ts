@@ -40,6 +40,11 @@ export class TasksController {
     return this.tasksService.resume(user.userId, id);
   }
 
+  @Post(':id/retry')
+  retry(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.tasksService.retry(user.userId, id);
+  }
+
   @Delete(':id')
   remove(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return this.tasksService.remove(user.userId, id);

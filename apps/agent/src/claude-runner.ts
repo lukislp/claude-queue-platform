@@ -75,14 +75,14 @@ export function abortRun(taskId: string, reason: 'cancel' | 'pause'): boolean {
 // sich je nach installierter Version leicht unterscheiden - ggf. hier anpassen.
 // Wichtig: nur gegen echte Fehlertexte testen, nie gegen komplette JSON-Events -
 // Token-Zähler, UUIDs oder Signaturen enthalten sonst schnell z.B. "429" als Ziffernfolge.
-const RATE_LIMIT_PATTERNS = [/usage limit/i, /rate limit/i, /try again later/i, /\b429\b/];
+export const RATE_LIMIT_PATTERNS = [/usage limit/i, /rate limit/i, /try again later/i, /\b429\b/];
 const DEFAULT_RATE_LIMIT_BACKOFF_MS = 30 * 60 * 1000; // Standard-Backoff: 30 Minuten
 
 /**
  * Versucht, eine Reset-Zeit aus der Limit-Meldung zu extrahieren.
  * Unterstützt "resets at 14:32" sowie das CLI-Format "usage limit reached|<epoch>".
  */
-function tryExtractResetTime(text: string): Date | undefined {
+export function tryExtractResetTime(text: string): Date | undefined {
   const epochMatch = text.match(/\|(\d{10,13})\b/);
   if (epochMatch) {
     const raw = Number(epochMatch[1]);
@@ -96,7 +96,7 @@ function tryExtractResetTime(text: string): Date | undefined {
 }
 
 /** Extrahiert aus einem stream-json-Event nur die fehlerrelevanten Texte. */
-function errorTextsFromEvent(parsed: any): string[] {
+export function errorTextsFromEvent(parsed: any): string[] {
   const texts: string[] = [];
   if (typeof parsed?.error === 'string') texts.push(parsed.error);
   if (typeof parsed?.error?.message === 'string') texts.push(parsed.error.message);

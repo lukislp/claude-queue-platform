@@ -136,6 +136,7 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
       error?: string;
       claudeSessionId?: string;
       retryAt?: string;
+      files?: { path: string; size: number; mtimeMs: number }[];
     },
   ) {
     const data = client.data as SocketData;
@@ -151,8 +152,9 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
           error = COALESCE($3, error),
           claude_session_id = COALESCE($4, claude_session_id),
           retry_at = $5,
-          completed_at = COALESCE($6, completed_at)
-         WHERE id = $7 AND status <> 'CANCELED' RETURNING *`,
+          completed_at = COALESCE($6, completed_at),
+          output_files = COALESCE($7::jsonb, output_files)
+         WHERE id = $8 AND status <> 'CANCELED' RETURNING *`,
         [
           body.status,
           body.result ?? null,
@@ -160,6 +162,7 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
           body.claudeSessionId ?? null,
           body.retryAt ? new Date(body.retryAt) : null,
           completedAt,
+          body.files ? JSON.stringify(body.files) : null,
           body.taskId,
         ],
       );

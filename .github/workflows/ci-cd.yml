@@ -33,6 +33,8 @@ jobs:
         working-directory: apps/${{ matrix.app }}
       - run: npm run build
         working-directory: apps/${{ matrix.app }}
+      - run: npm test --if-present
+        working-directory: apps/${{ matrix.app }}
 
   # ------------------------------------------------------------------
   # Version / docker / release — push to main only
