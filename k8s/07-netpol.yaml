@@ -115,6 +115,19 @@ spec:
       ports:
         - protocol: TCP
           port: 5432
+    # Instance-to-instance streaming replication (primary <-> replica, plus the join/backup
+    # pods CNPG spins up when adding an instance) - found missing live 2026-08-25 when scaling
+    # to 2 instances for the Longhorn storage migration: the join pod's connection to the
+    # primary's -rw service was refused, since this cluster had only ever run single-instance
+    # (instances: 1) until then, so replication traffic between cluster pods was never
+    # exercised before.
+    - from:
+        - podSelector:
+            matchLabels:
+              cnpg.io/cluster: claude-queue-pg
+      ports:
+        - protocol: TCP
+          port: 5432
     # CNPG operator reaches the instance manager (status/reload).
     - from:
         - namespaceSelector:

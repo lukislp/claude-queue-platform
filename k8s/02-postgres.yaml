@@ -9,6 +9,14 @@ metadata:
   name: claude-queue-pg
   namespace: claude-queue
 spec:
+  # Storage migrated to Longhorn (cross-node-replicated) 2026-08-25 via a temporary 2nd
+  # instance: bumped to instances:2 with storageClass below already set to longhorn, CNPG
+  # streamed a base backup + WAL onto the new instance, then "kubectl cnpg promote
+  # claude-queue-pg 2" switched primary onto it before scaling back to 1 here (existing PVCs
+  # are immutable in-place, so this replica-then-switchover dance is CNPG's supported way to
+  # change storageClass without a manual pg_basebackup/downtime). Uncovered a real gap along
+  # the way: the "postgres" NetworkPolicy (07-netpol.yaml) never allowed instance-to-instance
+  # traffic, since this cluster had only ever run single-instance before.
   instances: 1
   bootstrap:
     initdb:
@@ -16,7 +24,7 @@ spec:
       owner: claude_queue
   storage:
     size: 2Gi
-    storageClass: local-path
+    storageClass: longhorn
   inheritedMetadata:
     annotations:
       backup.velero.io/backup-volumes: pgdata
