@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/lukislp/claude-queue-platform/compare/v1.0.0...v1.1.0) (2026-08-25)
+
+
+### Features
+
+* wire up Flux GitOps deployment and generate cluster secret ([c110d47](https://github.com/lukislp/claude-queue-platform/commit/c110d473c8db5836f761f1305178fa638d813d36))
+
 # 1.0.0 (2026-08-25)
 
 
