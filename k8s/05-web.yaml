@@ -19,7 +19,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: web
-          image: ghcr.io/lukislp/claude-queue-web:1.2.1 # {"$imagepolicy": "flux-system:claude-queue-web"}
+          image: ghcr.io/lukislp/claude-queue-web:1.2.2 # {"$imagepolicy": "flux-system:claude-queue-web"}
           ports:
             - containerPort: 3000
               name: http
