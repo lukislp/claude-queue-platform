@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/lukislp/claude-queue-platform/compare/v1.1.1...v1.2.0) (2026-08-25)
+
+
+### Features
+
+* task retry, project management UI, output file listing, health checks and tests ([4485d5e](https://github.com/lukislp/claude-queue-platform/commit/4485d5eb307d836a9356ca530f87ca64cc3f75c0))
+
 ## [1.1.1](https://github.com/lukislp/claude-queue-platform/compare/v1.1.0...v1.1.1) (2026-08-25)
 
 
