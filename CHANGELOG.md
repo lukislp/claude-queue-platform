@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/lukislp/claude-queue-platform/compare/v1.2.0...v1.2.1) (2026-08-25)
+
+
+### Bug Fixes
+
+* migrate claude-queue-pg to Longhorn storage; allow CNPG inter-instance replication traffic ([c258fde](https://github.com/lukislp/claude-queue-platform/commit/c258fdec45e7788be0437e62edff724db5781ae1))
+
 # [1.2.0](https://github.com/lukislp/claude-queue-platform/compare/v1.1.1...v1.2.0) (2026-08-25)
 
 
