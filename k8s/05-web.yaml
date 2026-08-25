@@ -1,0 +1,70 @@
+# NEXT_PUBLIC_API_URL is baked in at image build time - the image must be built
+# with --build-arg NEXT_PUBLIC_API_URL=https://claudequeue-api.lukas2311-homelab.com
+# (and --platform linux/arm64).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: claude-queue
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: web
+          image: ghcr.io/lukislp/claude-queue-web:0.1.0 # {"$imagepolicy": "flux-system:claude-queue-web"}
+          ports:
+            - containerPort: 3000
+              name: http
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            seccompProfile:
+              type: RuntimeDefault
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 384Mi
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 5
+          volumeMounts:
+            # Next.js writes its runtime cache here; root filesystem stays untouched.
+            - name: next-cache
+              mountPath: /app/.next/cache
+      volumes:
+        - name: next-cache
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: claude-queue
+spec:
+  selector:
+    app: web
+  ports:
+    - port: 3000
+      targetPort: http

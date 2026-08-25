@@ -1,0 +1,29 @@
+# CNPG operator (cnpg-system) manages pods, hardening and the app credential
+# secret "claude-queue-pg-app" (key "uri" is consumed by the API deployment).
+# Velero: the volume annotation below only takes effect once the namespace
+# "claude-queue" is added to nightly-pvc includedNamespaces in
+# homelab-infra cluster/10-velero-values.yaml.
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: claude-queue-pg
+  namespace: claude-queue
+spec:
+  instances: 1
+  bootstrap:
+    initdb:
+      database: claude_queue
+      owner: claude_queue
+  storage:
+    size: 2Gi
+    storageClass: local-path
+  inheritedMetadata:
+    annotations:
+      backup.velero.io/backup-volumes: pgdata
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi

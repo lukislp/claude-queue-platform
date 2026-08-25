@@ -1,0 +1,21 @@
+{
+  "name": "@claude-queue/agent",
+  "version": "0.1.0",
+  "private": true,
+  "bin": {
+    "claude-queue-agent": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "socket.io-client": "^4.8.0",
+    "node-fetch": "^2.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.4",
+    "@types/node-fetch": "^2.6.11",
+    "typescript": "^5.6.2"
+  }
+}

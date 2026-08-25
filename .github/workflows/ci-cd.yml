@@ -1,0 +1,291 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  NODE_VERSION: "22"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        app: [api, web, agent]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: apps/${{ matrix.app }}/package-lock.json
+      - run: npm ci
+        working-directory: apps/${{ matrix.app }}
+      - run: npm run build
+        working-directory: apps/${{ matrix.app }}
+
+  # ------------------------------------------------------------------
+  # Version / docker / release — push to main only
+  # ------------------------------------------------------------------
+  get-version:
+    needs: [build]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    # @semantic-release/github's verifyConditions checks repo push access even
+    # during a dry run, so contents: write is required here too.
+    permissions:
+      contents: write
+    outputs:
+      next_version: ${{ steps.semrel.outputs.new_release_version }}
+      published: ${{ steps.semrel.outputs.new_release_published }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+      - id: semrel
+        uses: cycjimmy/semantic-release-action@b12c8f6015dc215fe37bc154d4ad456dd3833c90 # v6.0.0
+        with:
+          dry_run: true
+          extra_plugins: |
+            @semantic-release/changelog@7.0.0
+            @semantic-release/github@12.0.9
+            @semantic-release/git@11.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: No release needed for this push
+        if: steps.semrel.outputs.new_release_published != 'true'
+        run: |
+          echo "No releasable commits since the last tag (e.g. docs/ci/chore-only) - expected, not a failure." | tee -a "$GITHUB_STEP_SUMMARY"
+
+  semantic-release:
+    needs: [get-version]
+    if: github.event_name == 'push' && needs.get-version.outputs.published == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+      - id: semrel
+        uses: cycjimmy/semantic-release-action@b12c8f6015dc215fe37bc154d4ad456dd3833c90 # v6.0.0
+        with:
+          extra_plugins: |
+            @semantic-release/changelog@7.0.0
+            @semantic-release/github@12.0.9
+            @semantic-release/git@11.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  docker-smoke-check:
+    needs: [get-version, semantic-release]
+    if: github.event_name == 'push' && needs.get-version.outputs.published == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        image: [api, web]
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: smoke
+          POSTGRES_PASSWORD: smoke
+          POSTGRES_DB: smoke
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U smoke"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
+      - uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        with:
+          context: .
+          file: apps/${{ matrix.image }}/Dockerfile
+          load: true
+          tags: claude-queue-${{ matrix.image }}:smoke-check
+          cache-from: type=gha,scope=${{ matrix.image }}-amd64
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}-amd64
+      - name: Smoke-check api
+        if: matrix.image == 'api'
+        # 401 on a guarded route proves the app booted, migrated and serves requests.
+        run: |
+          docker run -d --name api-smoke --network host \
+            -e DATABASE_URL=postgresql://smoke:smoke@localhost:5432/smoke \
+            -e REDIS_URL=redis://localhost:6379 \
+            -e JWT_SECRET=smoke -e CLAUDE_KEY_ENCRYPTION_SECRET=smoke \
+            claude-queue-api:smoke-check
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:4000/auth/me || true)
+            if [ "$code" = "401" ]; then
+              echo "container is healthy"
+              docker rm -f api-smoke
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::container did not become healthy in time"
+          docker logs api-smoke
+          docker rm -f api-smoke
+          exit 1
+      - name: Smoke-check web
+        if: matrix.image == 'web'
+        run: |
+          docker run -d --name web-smoke -p 3000:3000 claude-queue-web:smoke-check
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3000 > /dev/null; then
+              echo "container is healthy"
+              docker rm -f web-smoke
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::container did not become healthy in time"
+          docker logs web-smoke
+          docker rm -f web-smoke
+          exit 1
+
+  docker-build-push:
+    # One native runner per platform instead of a single QEMU-emulated
+    # multi-platform build; each leg pushes by digest only and
+    # docker-manifest-merge stitches them into the multi-arch tags.
+    needs: [get-version, semantic-release, docker-smoke-check]
+    if: github.event_name == 'push' && needs.get-version.outputs.published == 'true'
+    strategy:
+      fail-fast: true
+      matrix:
+        image: [api, web]
+        arch: [amd64, arm64]
+        include:
+          - arch: amd64
+            platform: linux/amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
+    env:
+      NEXT_VERSION: ${{ needs.get-version.outputs.next_version }}
+      IMAGE: ghcr.io/lukislp/claude-queue-${{ matrix.image }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Guard against duplicate tag
+        run: |
+          if docker manifest inspect "${{ env.IMAGE }}:${{ env.NEXT_VERSION }}" >/dev/null 2>&1; then
+            echo "::error::registry tag ${{ env.NEXT_VERSION }} already exists (version race with a parallel run). Do NOT retry this run; wait for it to finish, then push again to produce a fresh version."
+            exit 1
+          fi
+      - name: Build and push by digest
+        id: build
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        with:
+          context: .
+          file: apps/${{ matrix.image }}/Dockerfile
+          platforms: ${{ matrix.platform }}
+          # NEXT_PUBLIC_API_URL is baked into the web bundle at build time.
+          build-args: |
+            NEXT_PUBLIC_API_URL=https://claudequeue-api.lukas2311-homelab.com
+          outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=gha,scope=${{ matrix.image }}-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}-${{ matrix.arch }}
+      - name: Export digest
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: digests-${{ matrix.image }}-${{ matrix.arch }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  docker-manifest-merge:
+    needs: [get-version, docker-build-push]
+    if: github.event_name == 'push' && needs.get-version.outputs.published == 'true'
+    strategy:
+      fail-fast: true
+      matrix:
+        image: [api, web]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      NEXT_VERSION: ${{ needs.get-version.outputs.next_version }}
+      IMAGE: ghcr.io/lukislp/claude-queue-${{ matrix.image }}
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: /tmp/digests
+          pattern: digests-${{ matrix.image }}-*
+          merge-multiple: true
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
+      - name: Create and push the multi-arch manifest
+        working-directory: /tmp/digests
+        run: |
+          docker buildx imagetools create \
+            -t "${{ env.IMAGE }}:${{ env.NEXT_VERSION }}" \
+            -t "${{ env.IMAGE }}:latest" \
+            $(printf "${{ env.IMAGE }}@sha256:%s " *)
+      - name: Inspect the pushed manifest
+        run: docker buildx imagetools inspect "${{ env.IMAGE }}:${{ env.NEXT_VERSION }}"
+
+  trivy-scan:
+    needs: [get-version, docker-manifest-merge]
+    if: github.event_name == 'push' && needs.get-version.outputs.published == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        image: [api, web]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    env:
+      NEXT_VERSION: ${{ needs.get-version.outputs.next_version }}
+      IMAGE: ghcr.io/lukislp/claude-queue-${{ matrix.image }}
+    steps:
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8 # v0.36.0
+        with:
+          image-ref: ${{ env.IMAGE }}:${{ env.NEXT_VERSION }}
+          format: table
+          severity: HIGH,CRITICAL
+          exit-code: "0"

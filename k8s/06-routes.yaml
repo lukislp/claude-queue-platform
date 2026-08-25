@@ -1,0 +1,73 @@
+# Prerequisites in homelab-infra (the shared gateway is Flux-managed there):
+#
+# 1) Two additional listeners on Gateway nginx-gateway/studylife-gateway:
+#
+#    - name: claudequeue
+#      hostname: claudequeue.lukas2311-homelab.com
+#      port: 443
+#      protocol: HTTPS
+#      tls:
+#        mode: Terminate
+#        certificateRefs:
+#          - kind: Secret
+#            name: claudequeue-tls
+#      allowedRoutes:
+#        namespaces:
+#          from: Selector
+#          selector:
+#            matchLabels:
+#              kubernetes.io/metadata.name: claude-queue
+#    - name: claudequeue-api
+#      hostname: claudequeue-api.lukas2311-homelab.com
+#      port: 443
+#      protocol: HTTPS
+#      tls:
+#        mode: Terminate
+#        certificateRefs:
+#          - kind: Secret
+#            name: claudequeue-api-tls
+#      allowedRoutes:
+#        namespaces:
+#          from: Selector
+#          selector:
+#            matchLabels:
+#              kubernetes.io/metadata.name: claude-queue
+#
+# 2) Two cert-manager Certificates in namespace nginx-gateway
+#    (issuerRef ClusterIssuer studylife-internal-ca-issuer) providing the
+#    secrets claudequeue-tls / claudequeue-api-tls for the listeners above.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: claudequeue-web
+  namespace: claude-queue
+spec:
+  parentRefs:
+    - name: studylife-gateway
+      namespace: nginx-gateway
+      sectionName: claudequeue
+  hostnames:
+    - claudequeue.lukas2311-homelab.com
+  rules:
+    - backendRefs:
+        - name: web
+          port: 3000
+---
+# Separate hostname for the API: the browser and the local agent talk to it
+# directly (cookies, WebSocket), so path-rewriting under one host is avoided.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: claudequeue-api
+  namespace: claude-queue
+spec:
+  parentRefs:
+    - name: studylife-gateway
+      namespace: nginx-gateway
+      sectionName: claudequeue-api
+  hostnames:
+    - claudequeue-api.lukas2311-homelab.com
+  rules:
+    - backendRefs:
+        - name: api
+          port: 4000
