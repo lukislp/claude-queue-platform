@@ -1,0 +1,19 @@
+# Scans GHCR for new tags of the api and web images (.github/workflows/ci-cd.yml
+# "docker-build-push" job - one release version tags both). Public packages, no secretRef.
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: claude-queue-api
+  namespace: flux-system
+spec:
+  image: ghcr.io/lukislp/claude-queue-api
+  interval: 5m
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: claude-queue-web
+  namespace: flux-system
+spec:
+  image: ghcr.io/lukislp/claude-queue-web
+  interval: 5m

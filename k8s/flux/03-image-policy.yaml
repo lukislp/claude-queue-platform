@@ -1,0 +1,25 @@
+# Selects the newest tag by SemVer - this repo's .releaserc.json pushes plain
+# SemVer tags without a "v" prefix via semantic-release.
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: claude-queue-api
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: claude-queue-api
+  policy:
+    semver:
+      range: ">=0.0.0"
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: claude-queue-web
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: claude-queue-web
+  policy:
+    semver:
+      range: ">=0.0.0"

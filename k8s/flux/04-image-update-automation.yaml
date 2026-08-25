@@ -1,0 +1,33 @@
+# Automatically commits new image tags to main (directly, no PR). Patches only the
+# marker comments in k8s/04-api.yaml and k8s/05-web.yaml. "[skip ci]" is mandatory -
+# without it a plain image-tag commit would re-trigger the entire CI pipeline.
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageUpdateAutomation
+metadata:
+  name: claude-queue-platform
+  namespace: flux-system
+spec:
+  interval: 5m
+  sourceRef:
+    kind: GitRepository
+    name: claude-queue-platform
+  git:
+    checkout:
+      ref:
+        branch: main
+    commit:
+      author:
+        email: flux@studylife.local
+        name: fluxcdbot
+      messageTemplate: |
+        chore(image): auto-update [skip ci]
+
+        {{ range $resource, $changes := .Changed.Objects -}}
+        - {{ $resource.Kind }} {{ $resource.Name }}
+        {{- range $_, $change := $changes }}
+            {{ $change.OldValue }} -> {{ $change.NewValue }}
+        {{- end }}
+        {{ end -}}
+  update:
+    path: ./k8s
+    strategy: Setters

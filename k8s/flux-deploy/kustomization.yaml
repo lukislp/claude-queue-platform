@@ -1,0 +1,10 @@
+# Deliberately ONLY these files - NOT the rest of k8s/. The kustomize-controller's
+# least-privilege ClusterRole covers Deployments/Services/PVCs, not Namespaces,
+# NetworkPolicies, Gateway API kinds, SealedSecrets or CNPG clusters - those are
+# bootstrap-only, applied once by hand (see the repo README's Kubernetes section).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../03-redis.yaml
+  - ../04-api.yaml
+  - ../05-web.yaml

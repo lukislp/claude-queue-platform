@@ -1,41 +1,17 @@
-# Prerequisites in homelab-infra (the shared gateway is Flux-managed there):
+# HTTPRoutes for the shared NGF gateway (homelab-infra cluster/02-gateway.yaml). Both
+# hostnames per service are internal-only, same trust level as every other service on
+# this Gateway.
 #
-# 1) Two additional listeners on Gateway nginx-gateway/studylife-gateway:
+# Requires: (1) four new listeners on the LIVE studylife-gateway object
+# (claudequeue-heim/-public -> secret claudequeue-tls, claudequeue-api-heim/-public ->
+# secret claudequeue-api-tls) - per that Gateway's documented incident, appended via
+# surgical `kubectl patch --type=json` (add at /spec/listeners/-) and backfilled in
+# homelab-infra, never a wholesale apply; cert-manager's gateway-shim creates the
+# Certificates from the Gateway's cluster-issuer annotation automatically;
+# (2) DNS entries for claudequeue.heim.lan and claudequeue-api.heim.lan pointing at the
+# Gateway's MetalLB IP; (3) NPM proxy hosts forwarding the lukas2311-homelab.com names.
 #
-#    - name: claudequeue
-#      hostname: claudequeue.lukas2311-homelab.com
-#      port: 443
-#      protocol: HTTPS
-#      tls:
-#        mode: Terminate
-#        certificateRefs:
-#          - kind: Secret
-#            name: claudequeue-tls
-#      allowedRoutes:
-#        namespaces:
-#          from: Selector
-#          selector:
-#            matchLabels:
-#              kubernetes.io/metadata.name: claude-queue
-#    - name: claudequeue-api
-#      hostname: claudequeue-api.lukas2311-homelab.com
-#      port: 443
-#      protocol: HTTPS
-#      tls:
-#        mode: Terminate
-#        certificateRefs:
-#          - kind: Secret
-#            name: claudequeue-api-tls
-#      allowedRoutes:
-#        namespaces:
-#          from: Selector
-#          selector:
-#            matchLabels:
-#              kubernetes.io/metadata.name: claude-queue
-#
-# 2) Two cert-manager Certificates in namespace nginx-gateway
-#    (issuerRef ClusterIssuer studylife-internal-ca-issuer) providing the
-#    secrets claudequeue-tls / claudequeue-api-tls for the listeners above.
+# Bootstrap-only, NOT Flux-managed.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -45,16 +21,16 @@ spec:
   parentRefs:
     - name: studylife-gateway
       namespace: nginx-gateway
-      sectionName: claudequeue
   hostnames:
+    - claudequeue.heim.lan
     - claudequeue.lukas2311-homelab.com
   rules:
     - backendRefs:
         - name: web
           port: 3000
 ---
-# Separate hostname for the API: the browser and the local agent talk to it
-# directly (cookies, WebSocket), so path-rewriting under one host is avoided.
+# Separate hostname for the API: the browser and the local agent talk to it directly
+# (cookies, WebSocket), so path-rewriting under one host is avoided.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -64,10 +40,51 @@ spec:
   parentRefs:
     - name: studylife-gateway
       namespace: nginx-gateway
-      sectionName: claudequeue-api
   hostnames:
+    - claudequeue-api.heim.lan
     - claudequeue-api.lukas2311-homelab.com
   rules:
     - backendRefs:
         - name: api
           port: 4000
+---
+# Same modest rate limit as every other exposed service on this Gateway.
+apiVersion: gateway.nginx.org/v1alpha1
+kind: RateLimitPolicy
+metadata:
+  name: claudequeue-web-rate-limit
+  namespace: claude-queue
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: claudequeue-web
+  rateLimit:
+    local:
+      rules:
+        - zoneSize: 10m
+          key: "$binary_remote_addr"
+          rate: 20r/s
+          burst: 200
+          noDelay: true
+    rejectCode: 503
+---
+apiVersion: gateway.nginx.org/v1alpha1
+kind: RateLimitPolicy
+metadata:
+  name: claudequeue-api-rate-limit
+  namespace: claude-queue
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: claudequeue-api
+  rateLimit:
+    local:
+      rules:
+        - zoneSize: 10m
+          key: "$binary_remote_addr"
+          rate: 20r/s
+          burst: 200
+          noDelay: true
+    rejectCode: 503
