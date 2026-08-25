@@ -77,6 +77,7 @@ export interface Task {
   model: string | null;
   status: TaskStatus;
   assignedDeviceId: string | null;
+  assignedDeviceName?: string | null;
   claudeSessionId: string | null;
   result: string | null;
   error: string | null;

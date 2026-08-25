@@ -39,6 +39,18 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
     return next;
   }
 
+  // Same pattern, keyed by user: with multiple devices, two dispatch triggers (e.g. two
+  // agents reconnecting at once) can otherwise interleave their occupancy checks and
+  // both believe a device has a free slot, over-committing past concurrency_limit.
+  private dispatchChains = new Map<string, Promise<any>>();
+
+  private runDispatchSerialized(userId: string, fn: () => Promise<void>) {
+    const previous = this.dispatchChains.get(userId) ?? Promise.resolve();
+    const next = previous.then(fn, fn);
+    this.dispatchChains.set(userId, next);
+    return next;
+  }
+
   constructor(
     private readonly jwtService: JwtService,
     private readonly db: DbService,
@@ -154,6 +166,12 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
       // Bereits vom Nutzer abgebrochene Tasks nicht mehr überschreiben.
       if (!result.rows[0]) return;
       const task = toCamel(result.rows[0]);
+      if (task.assignedDeviceId) {
+        const deviceResult = await this.db.query('SELECT name FROM devices WHERE id = $1', [
+          task.assignedDeviceId,
+        ]);
+        task.assignedDeviceName = deviceResult.rows[0]?.name ?? null;
+      }
       this.server.to(`user:${data.userId}`).emit('task:update', task);
 
       if (body.status === 'COMPLETED' || body.status === 'FAILED') {
@@ -162,8 +180,18 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
     });
   }
 
-  /** Weist so viele wartende Tasks wie möglich freien, online-Geräten des Nutzers zu. */
+  /**
+   * Weist so viele wartende Tasks wie möglich freien, online-Geräten des Nutzers zu.
+   * Mehrere Geräte gleichzeitig sind erlaubt (jedes mit eigenem Pairing/Token); die
+   * eigentliche Zuweisung ist eine einzige atomare UPDATE...FOR UPDATE SKIP LOCKED-Anweisung,
+   * damit derselbe Task niemals an zwei Geräte gleichzeitig geht, selbst wenn mehrere
+   * Dispatch-Läufe für denselben Nutzer überlappen.
+   */
   async tryDispatchForUser(userId: string) {
+    return this.runDispatchSerialized(userId, () => this.dispatchForUser(userId));
+  }
+
+  private async dispatchForUser(userId: string) {
     const connResult = await this.db.query(
       'SELECT * FROM claude_connections WHERE user_id = $1',
       [userId],
@@ -190,27 +218,33 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
         const occupied = occupiedResult.rows[0].count;
         if (occupied >= connection.concurrency_limit) continue;
 
-        const nextResult = await this.db.query(
-          `SELECT t.*, p.working_directory FROM tasks t
-           JOIN projects p ON p.id = t.project_id
-           WHERE t.user_id = $1 AND t.status = 'QUEUED'
-           ORDER BY t.created_at ASC LIMIT 1`,
-          [userId],
-        );
-        const nextTask = nextResult.rows[0];
-        if (!nextTask) return;
-
-        const updateResult = await this.db.query(
+        // Atomic claim: SKIP LOCKED means a concurrent claim for another device (or another
+        // process) never sees this row while it's mid-update, so exactly one device wins it.
+        const claimResult = await this.db.query(
           `UPDATE tasks SET status = 'RUNNING', assigned_device_id = $1, started_at = now()
-           WHERE id = $2 RETURNING *`,
-          [device.id, nextTask.id],
+           WHERE id = (
+             SELECT id FROM tasks
+             WHERE user_id = $2 AND status = 'QUEUED'
+             ORDER BY created_at ASC LIMIT 1
+             FOR UPDATE SKIP LOCKED
+           )
+           RETURNING *`,
+          [device.id, userId],
         );
-        const updated = toCamel(updateResult.rows[0]);
+        const claimed = claimResult.rows[0];
+        if (!claimed) return;
+
+        const projectResult = await this.db.query(
+          'SELECT working_directory FROM projects WHERE id = $1',
+          [claimed.project_id],
+        );
+        const updated = toCamel(claimed);
+        updated.assignedDeviceName = device.name;
 
         this.server.to(`device:${device.id}`).emit('task:assign', {
           taskId: updated.id,
           prompt: updated.prompt,
-          workingDirectory: nextTask.working_directory,
+          workingDirectory: projectResult.rows[0]?.working_directory ?? '.',
           resumeSessionId: updated.claudeSessionId ?? undefined,
           model: updated.model ?? undefined,
         });

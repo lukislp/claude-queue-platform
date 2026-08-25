@@ -51,7 +51,9 @@ export class TasksService {
     if (!project) throw new NotFoundException();
     if (project.user_id !== userId) throw new ForbiddenException();
     const result = await this.db.query(
-      'SELECT * FROM tasks WHERE project_id = $1 ORDER BY created_at ASC',
+      `SELECT t.*, d.name AS assigned_device_name FROM tasks t
+       LEFT JOIN devices d ON d.id = t.assigned_device_id
+       WHERE t.project_id = $1 ORDER BY t.created_at ASC`,
       [projectId],
     );
     return toCamelList(result.rows);

@@ -171,6 +171,7 @@ export function TaskTicket({ task, onDelete, onCancel, onPause, onResume }: Task
         </div>
         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 font-[family-name:var(--font-mono)] text-[11px] text-[var(--color-text-muted)]">
           {task.model && <span>Modell {task.model}</span>}
+          {task.assignedDeviceName && <span>Gerät {task.assignedDeviceName}</span>}
           <span>erstellt {formatTime(task.createdAt)}</span>
           {task.startedAt && <span>gestartet {formatTime(task.startedAt)}</span>}
           {task.completedAt && <span>beendet {formatTime(task.completedAt)}</span>}
