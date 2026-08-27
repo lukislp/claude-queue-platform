@@ -20,6 +20,14 @@ kind: Deployment
 metadata:
   name: redis
   namespace: claude-queue
+  annotations:
+    # Read by homelab-autodoc's findings engine: acknowledges the no-backup
+    # finding instead of leaving it open. The PVC header comment above holds
+    # the full rationale.
+    autodoc.homelab/accept-no-backup: >-
+      BullMQ job state is transient by design - the tasks table in Postgres
+      (backed up via Velero, see 02-postgres.yaml) is the source of truth,
+      losing this volume only loses in-flight queue state
 spec:
   replicas: 1
   # Recreate: RWO volume on local-path must be released before the new pod starts.
