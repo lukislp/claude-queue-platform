@@ -1,3 +1,10 @@
+## [1.2.3](https://github.com/lukislp/claude-queue-platform/compare/v1.2.2...v1.2.3) (2026-09-03)
+
+
+### Bug Fixes
+
+* **ci:** add Dependabot for github-actions, npm, docker ([074a23b](https://github.com/lukislp/claude-queue-platform/commit/074a23b8a66ff91b19e1f80dcbdf93dbf18128d8))
+
 ## [1.2.2](https://github.com/lukislp/claude-queue-platform/compare/v1.2.1...v1.2.2) (2026-08-25)
 
 
