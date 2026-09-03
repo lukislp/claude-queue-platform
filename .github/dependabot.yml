@@ -1,0 +1,29 @@
+# Weekly Dependabot updates: GitHub Actions, the three npm apps (dev deps grouped) and both Dockerfiles.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "fix(ci)"
+  - package-ecosystem: npm
+    directories:
+      - /apps/agent
+      - /apps/api
+      - /apps/web
+    schedule:
+      interval: weekly
+    groups:
+      dev:
+        dependency-type: development
+    commit-message:
+      prefix: "fix(deps)"
+  - package-ecosystem: docker
+    directories:
+      - /apps/api
+      - /apps/web
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "fix(docker)"
