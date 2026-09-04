@@ -1,3 +1,24 @@
+## [1.2.7](https://github.com/lukislp/claude-queue-platform/compare/v1.2.6...v1.2.7) (2026-09-04)
+
+
+### Bug Fixes
+
+* **deps:** bump bcryptjs and @types/bcryptjs in /apps/api ([de9533a](https://github.com/lukislp/claude-queue-platform/commit/de9533a7566adb1600ac642dfe25b44e4e87ad22))
+
+## [1.2.6](https://github.com/lukislp/claude-queue-platform/compare/v1.2.5...v1.2.6) (2026-09-04)
+
+
+### Bug Fixes
+
+* **deps:** bump the dev group across 3 directories, dropping the typescript major ([8dbdda5](https://github.com/lukislp/claude-queue-platform/commit/8dbdda54ca69da22577d0ce1bb5ec8b441aeb3f6)), closes [#8](https://github.com/lukislp/claude-queue-platform/issues/8)
+
+## [1.2.5](https://github.com/lukislp/claude-queue-platform/compare/v1.2.4...v1.2.5) (2026-09-04)
+
+
+### Bug Fixes
+
+* **ci:** ignore base image major bumps in Dependabot ([828ba61](https://github.com/lukislp/claude-queue-platform/commit/828ba61310f91b605ceb1118b5b734140878d867))
+
 ## [1.2.4](https://github.com/lukislp/claude-queue-platform/compare/v1.2.3...v1.2.4) (2026-09-04)
 
 

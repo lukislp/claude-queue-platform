@@ -25,5 +25,9 @@ updates:
       - /apps/web
     schedule:
       interval: weekly
+    ignore:
+      - dependency-name: "node"
+        update-types:
+          - "version-update:semver-major"
     commit-message:
       prefix: "fix(docker)"
