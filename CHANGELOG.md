@@ -1,3 +1,13 @@
+## [1.2.4](https://github.com/lukislp/claude-queue-platform/compare/v1.2.3...v1.2.4) (2026-09-04)
+
+
+### Bug Fixes
+
+* **ci:** bump actions/setup-node from 5 to 7 ([b1ae643](https://github.com/lukislp/claude-queue-platform/commit/b1ae643c8f76fa4c29a4958b9697b4210640b48d))
+* **ci:** bump aquasecurity/trivy-action ([7776be5](https://github.com/lukislp/claude-queue-platform/commit/7776be51ed18bdd2c49a89719c62373de33e2f99))
+* **ci:** bump docker/setup-buildx-action from 4.2.0 to 4.3.0 ([df7d2cb](https://github.com/lukislp/claude-queue-platform/commit/df7d2cb65125be44c156a0144f3755313c94618f))
+* **deps:** bump class-validator from 0.14.4 to 0.15.1 in /apps/api ([6bc9b8d](https://github.com/lukislp/claude-queue-platform/commit/6bc9b8d30584b197fd914da361fc48063e0204a2))
+
 ## [1.2.3](https://github.com/lukislp/claude-queue-platform/compare/v1.2.2...v1.2.3) (2026-09-03)
 
 
