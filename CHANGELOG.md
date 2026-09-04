@@ -1,3 +1,10 @@
+## [1.2.6](https://github.com/lukislp/claude-queue-platform/compare/v1.2.5...v1.2.6) (2026-09-04)
+
+
+### Bug Fixes
+
+* **deps:** bump the dev group across 3 directories, dropping the typescript major ([8dbdda5](https://github.com/lukislp/claude-queue-platform/commit/8dbdda54ca69da22577d0ce1bb5ec8b441aeb3f6)), closes [#8](https://github.com/lukislp/claude-queue-platform/issues/8)
+
 ## [1.2.5](https://github.com/lukislp/claude-queue-platform/compare/v1.2.4...v1.2.5) (2026-09-04)
 
 
