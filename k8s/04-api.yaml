@@ -17,7 +17,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: api
-          image: ghcr.io/lukislp/claude-queue-api:1.2.3 # {"$imagepolicy": "flux-system:claude-queue-api"}
+          image: ghcr.io/lukislp/claude-queue-api:1.2.4 # {"$imagepolicy": "flux-system:claude-queue-api"}
           ports:
             - containerPort: 4000
               name: http
