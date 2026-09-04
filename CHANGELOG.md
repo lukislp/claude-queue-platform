@@ -1,3 +1,10 @@
+## [1.2.12](https://github.com/lukislp/claude-queue-platform/compare/v1.2.11...v1.2.12) (2026-09-04)
+
+
+### Bug Fixes
+
+* **ci:** ignore typescript major bumps in Dependabot ([f1b0043](https://github.com/lukislp/claude-queue-platform/commit/f1b004382150a8b9cea3b6218ec6e18c5a6d26c7))
+
 ## [1.2.11](https://github.com/lukislp/claude-queue-platform/compare/v1.2.10...v1.2.11) (2026-09-04)
 
 
