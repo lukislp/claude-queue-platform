@@ -1,3 +1,11 @@
+## [1.2.8](https://github.com/lukislp/claude-queue-platform/compare/v1.2.7...v1.2.8) (2026-09-04)
+
+
+### Bug Fixes
+
+* **deps:** use the built-in fetch in the agent ([b0abd8d](https://github.com/lukislp/claude-queue-platform/commit/b0abd8d91ff7a7dff3130e249be47853e9f595eb))
+* **deps:** use the built-in fetch in the agent ([aa16be7](https://github.com/lukislp/claude-queue-platform/commit/aa16be734571c4c686e0227d56a2fe8aba80cf30))
+
 ## [1.2.7](https://github.com/lukislp/claude-queue-platform/compare/v1.2.6...v1.2.7) (2026-09-04)
 
 
