@@ -1,3 +1,10 @@
+## [1.2.7](https://github.com/lukislp/claude-queue-platform/compare/v1.2.6...v1.2.7) (2026-09-04)
+
+
+### Bug Fixes
+
+* **deps:** bump bcryptjs and @types/bcryptjs in /apps/api ([de9533a](https://github.com/lukislp/claude-queue-platform/commit/de9533a7566adb1600ac642dfe25b44e4e87ad22))
+
 ## [1.2.6](https://github.com/lukislp/claude-queue-platform/compare/v1.2.5...v1.2.6) (2026-09-04)
 
 
