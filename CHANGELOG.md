@@ -1,3 +1,10 @@
+## [1.2.9](https://github.com/lukislp/claude-queue-platform/compare/v1.2.8...v1.2.9) (2026-09-04)
+
+
+### Bug Fixes
+
+* **deps:** bump ioredis from 5.11.1 to 6.0.0 in /apps/api ([4cdee11](https://github.com/lukislp/claude-queue-platform/commit/4cdee11dcc3cf7d1f3efb2e502720e5f7c93beea))
+
 ## [1.2.8](https://github.com/lukislp/claude-queue-platform/compare/v1.2.7...v1.2.8) (2026-09-04)
 
 
