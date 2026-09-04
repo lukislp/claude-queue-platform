@@ -1,3 +1,10 @@
+## [1.2.10](https://github.com/lukislp/claude-queue-platform/compare/v1.2.9...v1.2.10) (2026-09-04)
+
+
+### Bug Fixes
+
+* **ci:** bump Node to 24 to unblock the NestJS 12 ESM requirement ([c7ca110](https://github.com/lukislp/claude-queue-platform/commit/c7ca110096ea2cc3013f11eb9176176f7bd18424))
+
 ## [1.2.9](https://github.com/lukislp/claude-queue-platform/compare/v1.2.8...v1.2.9) (2026-09-04)
 
 
