@@ -1,3 +1,10 @@
+## [1.2.5](https://github.com/lukislp/claude-queue-platform/compare/v1.2.4...v1.2.5) (2026-09-04)
+
+
+### Bug Fixes
+
+* **ci:** ignore base image major bumps in Dependabot ([828ba61](https://github.com/lukislp/claude-queue-platform/commit/828ba61310f91b605ceb1118b5b734140878d867))
+
 ## [1.2.4](https://github.com/lukislp/claude-queue-platform/compare/v1.2.3...v1.2.4) (2026-09-04)
 
 
