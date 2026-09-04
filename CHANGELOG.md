@@ -1,3 +1,10 @@
+## [1.2.14](https://github.com/lukislp/claude-queue-platform/compare/v1.2.13...v1.2.14) (2026-09-04)
+
+
+### Bug Fixes
+
+* **deps:** bump next from 16.3.2 to 16.3.4 in /apps/web ([40ffaa4](https://github.com/lukislp/claude-queue-platform/commit/40ffaa4cd36ad0ded044038db630d794201c5c05))
+
 ## [1.2.13](https://github.com/lukislp/claude-queue-platform/compare/v1.2.12...v1.2.13) (2026-09-04)
 
 
