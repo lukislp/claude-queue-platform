@@ -1,3 +1,13 @@
+## [1.2.13](https://github.com/lukislp/claude-queue-platform/compare/v1.2.12...v1.2.13) (2026-09-04)
+
+
+### Bug Fixes
+
+* **deps:** bump @anthropic-ai/sdk from 0.120.0 to 0.123.0 in /apps/api ([bb69c07](https://github.com/lukislp/claude-queue-platform/commit/bb69c07e6865200415066f95b735fcb891b90973))
+* **deps:** bump bullmq from 5.81.4 to 6.3.4 in /apps/api ([1fd3f31](https://github.com/lukislp/claude-queue-platform/commit/1fd3f31844d83ea59d252305b2479ee886a9561f))
+* **deps:** bump eslint-config-next ([8f55a25](https://github.com/lukislp/claude-queue-platform/commit/8f55a25c5f920389981b6ebdf2c2c647519fdec2))
+* **deps:** bump uuid from 10.0.0 to 14.0.2 in /apps/api ([48721a2](https://github.com/lukislp/claude-queue-platform/commit/48721a269632f58525dfe9071ac5a4fd7d8b4f59))
+
 ## [1.2.12](https://github.com/lukislp/claude-queue-platform/compare/v1.2.11...v1.2.12) (2026-09-04)
 
 
