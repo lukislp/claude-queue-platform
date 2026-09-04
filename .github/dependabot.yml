@@ -17,6 +17,14 @@ updates:
     groups:
       dev:
         dependency-type: development
+    # typescript-go (the TS 7 rewrite) isn't supported yet by ts-jest (used in api/agent - its
+    # published peer range caps at "<7") or by typescript-eslint (used in web - refuses to run
+    # at all under TS 7, "typescript-eslint does not support TS 7.0"), confirmed 2026-09-05.
+    # Revisit once those two catch up.
+    ignore:
+      - dependency-name: "typescript"
+        update-types:
+          - "version-update:semver-major"
     commit-message:
       prefix: "fix(deps)"
   - package-ecosystem: docker
