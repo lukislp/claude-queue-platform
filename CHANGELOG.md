@@ -1,3 +1,10 @@
+## [1.2.11](https://github.com/lukislp/claude-queue-platform/compare/v1.2.10...v1.2.11) (2026-09-04)
+
+
+### Bug Fixes
+
+* **deps:** upgrade apps/api to NestJS 12 ([1f286b5](https://github.com/lukislp/claude-queue-platform/commit/1f286b51c4c9603a4c09a7bf8244e5ccc4544d6d))
+
 ## [1.2.10](https://github.com/lukislp/claude-queue-platform/compare/v1.2.9...v1.2.10) (2026-09-04)
 
 
