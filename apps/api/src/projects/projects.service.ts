@@ -10,7 +10,9 @@ export function toFolderSlug(name: string): string {
     .toLowerCase()
     .replace(/[äöüß]/g, (c) => ({ ä: 'ae', ö: 'oe', ü: 'ue', ß: 'ss' }[c] ?? c))
     .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
+    // The previous replace collapses every run of separators into a single '-', so a
+    // single-character trim is equivalent here and avoids the quadratic backtracking of '-+$'.
+    .replace(/^-|-$/g, '')
     .slice(0, 60);
   return slug || 'projekt';
 }
