@@ -1,3 +1,10 @@
+## [1.2.15](https://github.com/lukislp/claude-queue-platform/compare/v1.2.14...v1.2.15) (2026-09-11)
+
+
+### Bug Fixes
+
+* **ci:** push release commits as a deploy key so the default branch can be ruleset-protected ([6594b75](https://github.com/lukislp/claude-queue-platform/commit/6594b75dbd690fabc0fffd803141f6ed31aaa284))
+
 ## [1.2.14](https://github.com/lukislp/claude-queue-platform/compare/v1.2.13...v1.2.14) (2026-09-04)
 
 
