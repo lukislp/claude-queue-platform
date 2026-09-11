@@ -1,3 +1,10 @@
+## [1.2.17](https://github.com/lukislp/claude-queue-platform/compare/v1.2.16...v1.2.17) (2026-09-11)
+
+
+### Bug Fixes
+
+* **ci:** read-only GITHUB_TOKEN in the Dependabot auto-merge workflow ([20b38c9](https://github.com/lukislp/claude-queue-platform/commit/20b38c95a94517dcbdbde73e17ac4719dd224d0b))
+
 ## [1.2.16](https://github.com/lukislp/claude-queue-platform/compare/v1.2.15...v1.2.16) (2026-09-11)
 
 
