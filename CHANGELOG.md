@@ -1,3 +1,10 @@
+## [1.2.16](https://github.com/lukislp/claude-queue-platform/compare/v1.2.15...v1.2.16) (2026-09-11)
+
+
+### Bug Fixes
+
+* resolve CodeQL findings ([#39](https://github.com/lukislp/claude-queue-platform/issues/39)) ([a9051c3](https://github.com/lukislp/claude-queue-platform/commit/a9051c3dc5f4e6d4de44a7af8bc96a43c99e51cf))
+
 ## [1.2.15](https://github.com/lukislp/claude-queue-platform/compare/v1.2.14...v1.2.15) (2026-09-11)
 
 
