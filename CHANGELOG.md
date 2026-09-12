@@ -1,3 +1,10 @@
+## [1.2.18](https://github.com/lukislp/claude-queue-platform/compare/v1.2.17...v1.2.18) (2026-09-12)
+
+
+### Bug Fixes
+
+* **ci:** bump the deployment image tag from the pipeline instead of Flux ([#44](https://github.com/lukislp/claude-queue-platform/issues/44)) ([02cfe9c](https://github.com/lukislp/claude-queue-platform/commit/02cfe9ca0e6e38af830ed159b6fdf0d218f1af75))
+
 ## [1.2.17](https://github.com/lukislp/claude-queue-platform/compare/v1.2.16...v1.2.17) (2026-09-11)
 
 
