@@ -1,3 +1,31 @@
+## [1.2.18](https://github.com/lukislp/claude-queue-platform/compare/v1.2.17...v1.2.18) (2026-09-12)
+
+
+### Bug Fixes
+
+* **ci:** bump the deployment image tag from the pipeline instead of Flux ([#44](https://github.com/lukislp/claude-queue-platform/issues/44)) ([02cfe9c](https://github.com/lukislp/claude-queue-platform/commit/02cfe9ca0e6e38af830ed159b6fdf0d218f1af75))
+
+## [1.2.17](https://github.com/lukislp/claude-queue-platform/compare/v1.2.16...v1.2.17) (2026-09-11)
+
+
+### Bug Fixes
+
+* **ci:** read-only GITHUB_TOKEN in the Dependabot auto-merge workflow ([20b38c9](https://github.com/lukislp/claude-queue-platform/commit/20b38c95a94517dcbdbde73e17ac4719dd224d0b))
+
+## [1.2.16](https://github.com/lukislp/claude-queue-platform/compare/v1.2.15...v1.2.16) (2026-09-11)
+
+
+### Bug Fixes
+
+* resolve CodeQL findings ([#39](https://github.com/lukislp/claude-queue-platform/issues/39)) ([a9051c3](https://github.com/lukislp/claude-queue-platform/commit/a9051c3dc5f4e6d4de44a7af8bc96a43c99e51cf))
+
+## [1.2.15](https://github.com/lukislp/claude-queue-platform/compare/v1.2.14...v1.2.15) (2026-09-11)
+
+
+### Bug Fixes
+
+* **ci:** push release commits as a deploy key so the default branch can be ruleset-protected ([6594b75](https://github.com/lukislp/claude-queue-platform/commit/6594b75dbd690fabc0fffd803141f6ed31aaa284))
+
 ## [1.2.14](https://github.com/lukislp/claude-queue-platform/compare/v1.2.13...v1.2.14) (2026-09-04)
 
 
