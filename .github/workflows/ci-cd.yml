@@ -33,7 +33,13 @@ jobs:
         working-directory: apps/${{ matrix.app }}
       - run: npm run build
         working-directory: apps/${{ matrix.app }}
+      # apps/web has no test suite yet, so --if-present is a deliberate no-op there; api and
+      # agent run their jest suites.
       - run: npm test --if-present
+        working-directory: apps/${{ matrix.app }}
+      # Known-vulnerable npm packages fail the build (same level as studylife-capture/focus);
+      # the Trivy scan after the release only covers the two container images, not apps/agent.
+      - run: npm audit --audit-level=high
         working-directory: apps/${{ matrix.app }}
 
   # ------------------------------------------------------------------
@@ -128,6 +134,33 @@ jobs:
           git remote set-url origin "git@github.com:${{ github.repository }}.git"
           echo "GIT_SSH_COMMAND=ssh -i ~/.ssh/semantic_release -o IdentitiesOnly=yes" >> "$GITHUB_ENV"
       - id: semrel
+        uses: cycjimmy/semantic-release-action@b12c8f6015dc215fe37bc154d4ad456dd3833c90 # v6.0.0
+        with:
+          extra_plugins: |
+            @semantic-release/changelog@7.0.0
+            @semantic-release/github@12.0.9
+            @semantic-release/git@11.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # A second, unrelated push can land on main between this job's checkout and its push
+        # (a Dependabot merge, a deploy-bump from a parallel release); semantic-release then
+        # refuses with "local branch is behind the remote". Same diagnose-and-retry as the
+        # sibling repos instead of a red release for a benign race.
+        continue-on-error: true
+      - if: steps.semrel.outcome == 'failure'
+        name: "Diagnose before retrying (expected: an out-of-band push landed since checkout)"
+        run: |
+          git fetch origin main
+          BEFORE_SHA="$(git rev-parse HEAD)"
+          AFTER_SHA="$(git rev-parse origin/main)"
+          if [ "$BEFORE_SHA" != "$AFTER_SHA" ]; then
+            echo "origin/main moved since checkout ($BEFORE_SHA -> $AFTER_SHA) - this matches the out-of-band-push race this retry is designed for."
+          else
+            echo "::warning::origin/main did NOT move since checkout - this failure is likely NOT the expected out-of-band-push race. Retrying anyway, but check the semantic-release log above for the real cause before assuming this is just a race."
+          fi
+          git checkout -B main origin/main
+      - if: steps.semrel.outcome == 'failure'
+        id: semrel_retry
         uses: cycjimmy/semantic-release-action@b12c8f6015dc215fe37bc154d4ad456dd3833c90 # v6.0.0
         with:
           extra_plugins: |
