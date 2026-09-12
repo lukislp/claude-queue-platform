@@ -1,3 +1,10 @@
+## [1.2.20](https://github.com/lukislp/claude-queue-platform/compare/v1.2.19...v1.2.20) (2026-09-12)
+
+
+### Bug Fixes
+
+* **deps:** bump the dev group across 1 directory with 2 updates ([975f8ea](https://github.com/lukislp/claude-queue-platform/commit/975f8ea957b3041a1ac0d6f861fcef06b555cac9))
+
 ## [1.2.19](https://github.com/lukislp/claude-queue-platform/compare/v1.2.18...v1.2.19) (2026-09-12)
 
 
