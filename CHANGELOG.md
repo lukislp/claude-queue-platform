@@ -1,3 +1,10 @@
+## [1.2.19](https://github.com/lukislp/claude-queue-platform/compare/v1.2.18...v1.2.19) (2026-09-12)
+
+
+### Bug Fixes
+
+* **deps:** bump @anthropic-ai/sdk from 0.123.0 to 0.124.0 in /apps/api ([25658c0](https://github.com/lukislp/claude-queue-platform/commit/25658c0900d696013939c23a9f66a741682d0624))
+
 ## [1.2.18](https://github.com/lukislp/claude-queue-platform/compare/v1.2.17...v1.2.18) (2026-09-12)
 
 
