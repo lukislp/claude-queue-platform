@@ -6,9 +6,10 @@ Manifests for running [claude-queue-platform](../README.md) on the real cluster
 Onboarded into the cluster-wide [homelab-infra](https://github.com/lukislp/homelab-infra)
 Flux GitOps pattern - this repo owns its own Flux wiring (`k8s/flux/`), rather than a
 central repo managing it on this repo's behalf. `03-redis.yaml`, `04-api.yaml` and
-`05-web.yaml` are **Flux-managed**: `k8s/flux/` watches GHCR for new `api`/`web` image
-tags and auto-bumps the `$imagepolicy`-marked image lines, `k8s/flux-deploy/kustomization.yaml`
-is the subset Flux actually applies. Everything else (`00-namespace.yaml`,
+`05-web.yaml` are **Flux-managed**: the release pipeline's `deploy-bump` job writes every
+released `api`/`web` version into their image lines (over the semantic-release deploy key, so
+nothing in the cluster holds a write token for this repo), `k8s/flux-deploy/kustomization.yaml`
+is the subset Flux (read-only `k8s/flux/01-git-source.yaml`) actually applies. Everything else (`00-namespace.yaml`,
 `01-secrets-sealed.yaml`, `02-postgres.yaml`, `06-routes.yaml`, `07-netpol.yaml`) stays
 **bootstrap-only** - applied once by hand, never touched by Flux (homelab-infra's
 `flux/01-reconciler-rbac.yaml` least-privilege ClusterRole doesn't grant those kinds).
@@ -69,7 +70,7 @@ README's "Ersten Nutzer anlegen und testen" section.
 kubectl -n claude-queue get pods
 kubectl -n claude-queue logs -f deploy/api
 kubectl -n claude-queue logs -f deploy/web
-flux logs --kind ImageUpdateAutomation --name claude-queue-platform -n flux-system
+flux logs --kind Kustomization --name claude-queue-deploy -n flux-system
 ```
 
 ## Tear down
