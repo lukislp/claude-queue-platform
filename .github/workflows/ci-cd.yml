@@ -22,6 +22,7 @@ jobs:
       matrix:
         app: [api, web, agent]
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -49,6 +50,7 @@ jobs:
     needs: [build]
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     # @semantic-release/github's verifyConditions checks repo push access even
     # during a dry run, so contents: write is required here too.
     permissions:
@@ -102,6 +104,7 @@ jobs:
     needs: [get-version]
     if: github.event_name == 'push' && needs.get-version.outputs.published == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: write
       issues: write
@@ -178,6 +181,7 @@ jobs:
       matrix:
         image: [api, web]
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     services:
       postgres:
         image: postgres:16-alpine
@@ -263,6 +267,7 @@ jobs:
             platform: linux/arm64
             runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
     permissions:
       contents: read
       packages: write
@@ -324,6 +329,7 @@ jobs:
       matrix:
         image: [api, web]
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     permissions:
       contents: read
       packages: write
@@ -381,6 +387,7 @@ jobs:
     needs: [get-version, docker-manifest-merge]
     if: github.event_name == 'push' && needs.get-version.outputs.published == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     concurrency:
       group: claude-queue-platform-release-chain
       cancel-in-progress: false
@@ -440,6 +447,7 @@ jobs:
       matrix:
         image: [api, web]
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
       packages: read
