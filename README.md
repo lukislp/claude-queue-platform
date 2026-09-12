@@ -2,6 +2,7 @@
 
 [![CI/CD](https://github.com/lukislp/claude-queue-platform/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/lukislp/claude-queue-platform/actions/workflows/ci-cd.yml) [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/lukislp/claude-queue-platform/badge)](https://scorecard.dev/viewer/?uri=github.com/lukislp/claude-queue-platform) [![CodeQL](https://github.com/lukislp/claude-queue-platform/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/lukislp/claude-queue-platform/security/code-scanning)
 [![Release](https://img.shields.io/github/v/release/lukislp/claude-queue-platform)](https://github.com/lukislp/claude-queue-platform/releases)
+[![License: MIT](https://img.shields.io/github/license/lukislp/claude-queue-platform)](LICENSE)
 [![Node](https://img.shields.io/badge/node-20%2B-brightgreen)](.github/workflows/ci-cd.yml)
 
 Multi-User-Plattform mit eigener Authentifizierung, in der jeder Nutzer Projekte anlegt und
