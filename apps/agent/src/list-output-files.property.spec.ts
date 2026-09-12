@@ -13,11 +13,14 @@ import { listOutputFiles } from './list-output-files';
 describe('listOutputFiles properties', () => {
   const IGNORED = ['node_modules', '.git', 'dist', 'build', '.next', '.turbo', '__pycache__', '.venv'];
 
-  // Portable file-name characters only: the property is about the walker, not the OS.
-  const nameArb = fc.stringMatching(/^[a-z][a-z0-9_-]{0,11}$/);
+  // Portable file-name characters only: the property is about the walker, not the OS. Directory
+  // and file names come from disjoint prefixes so a generated file can never collide with a
+  // generated directory of the same name, and none of them can spell an ignored directory.
+  const dirNameArb = fc.stringMatching(/^d[a-z0-9_-]{0,10}$/);
+  const fileNameArb = fc.stringMatching(/^f[a-z0-9_-]{0,10}$/);
   const fileArb = fc.record({
-    dirs: fc.array(nameArb, { maxLength: 3 }),
-    name: nameArb,
+    dirs: fc.array(dirNameArb, { maxLength: 3 }),
+    name: fileNameArb,
     size: fc.nat({ max: 512 }),
   });
 
@@ -64,7 +67,7 @@ describe('listOutputFiles properties', () => {
       fc.property(
         fc.array(fileArb, { maxLength: 10 }),
         fc.constantFrom(...IGNORED, '.hidden', '.cache'),
-        fc.array(nameArb, { minLength: 1, maxLength: 5 }),
+        fc.array(fileNameArb, { minLength: 1, maxLength: 5 }),
         (visible, skipped, hiddenFiles) => {
           const root = makeTempDir();
           try {
