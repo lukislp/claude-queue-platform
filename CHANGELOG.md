@@ -1,3 +1,10 @@
+## [1.2.21](https://github.com/lukislp/claude-queue-platform/compare/v1.2.20...v1.2.21) (2026-09-12)
+
+
+### Bug Fixes
+
+* **ci:** retry semantic-release on the out-of-band-push race and audit every app ([#53](https://github.com/lukislp/claude-queue-platform/issues/53)) ([58ee1b0](https://github.com/lukislp/claude-queue-platform/commit/58ee1b05c74d7a0e8e35fd43f7edd086a59da25f))
+
 ## [1.2.20](https://github.com/lukislp/claude-queue-platform/compare/v1.2.19...v1.2.20) (2026-09-12)
 
 
