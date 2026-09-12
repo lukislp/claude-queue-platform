@@ -74,15 +74,10 @@ jobs:
         with:
           deploy-key: ${{ secrets.SEMANTIC_RELEASE_DEPLOY_KEY }}
       - id: semrel
-        uses: cycjimmy/semantic-release-action@b12c8f6015dc215fe37bc154d4ad456dd3833c90 # v6.0.0
+        uses: lukislp/ci-workflows/.github/actions/semantic-release@c1dd49d3d005e8912ab3420d5fdd7f3d9ee16adf # v1.2.2
         with:
-          dry_run: true
-          extra_plugins: |
-            @semantic-release/changelog@7.0.0
-            @semantic-release/github@12.0.9
-            @semantic-release/git@11.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          dry-run: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: No release needed for this push
         if: steps.semrel.outputs.new_release_published != 'true'
         run: |
@@ -113,14 +108,9 @@ jobs:
         with:
           deploy-key: ${{ secrets.SEMANTIC_RELEASE_DEPLOY_KEY }}
       - id: semrel
-        uses: cycjimmy/semantic-release-action@b12c8f6015dc215fe37bc154d4ad456dd3833c90 # v6.0.0
+        uses: lukislp/ci-workflows/.github/actions/semantic-release@c1dd49d3d005e8912ab3420d5fdd7f3d9ee16adf # v1.2.2
         with:
-          extra_plugins: |
-            @semantic-release/changelog@7.0.0
-            @semantic-release/github@12.0.9
-            @semantic-release/git@11.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
         # A second, unrelated push can land on main between this job's checkout and its push
         # (a Dependabot merge, a deploy-bump from a parallel release); semantic-release then
         # refuses with "local branch is behind the remote". Same diagnose-and-retry as the
@@ -140,14 +130,9 @@ jobs:
           git checkout -B main origin/main
       - if: steps.semrel.outcome == 'failure'
         id: semrel_retry
-        uses: cycjimmy/semantic-release-action@b12c8f6015dc215fe37bc154d4ad456dd3833c90 # v6.0.0
+        uses: lukislp/ci-workflows/.github/actions/semantic-release@c1dd49d3d005e8912ab3420d5fdd7f3d9ee16adf # v1.2.2
         with:
-          extra_plugins: |
-            @semantic-release/changelog@7.0.0
-            @semantic-release/github@12.0.9
-            @semantic-release/git@11.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   docker-smoke-check:
     needs: [get-version, semantic-release]
