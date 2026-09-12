@@ -19,7 +19,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: web
-          image: ghcr.io/lukislp/claude-queue-web:1.2.19 # set by the deploy-bump job (CI) on every release
+          image: ghcr.io/lukislp/claude-queue-web:1.2.20 # set by the deploy-bump job (CI) on every release
           ports:
             - containerPort: 3000
               name: http
