@@ -1,0 +1,23 @@
+# Daily base backup on top of the continuous WAL archiving configured in k8s/02-postgres.yaml.
+# Without a periodic base backup the WAL archive grows forever and recovery would have to
+# replay from the very first segment; barman needs a recent base to bound restore time, and
+# CNPG's 30d retention only prunes WALs that are older than the oldest still-retained backup.
+#
+# 02:00 deliberately: 03:00 is already taken by studylife-pg's own daily backup and by
+# Velero's nightly PVC schedule, 03:30 by Velero's cluster-state schedule. Running an hour
+# earlier keeps this cluster's upload off the same window - on three Raspberry Pis sharing
+# one uplink, overlapping offsite uploads compete for the same bandwidth - and it still sits
+# in the quiet part of the night.
+#
+# Do NOT apply while spec.backup.barmanObjectStore is absent from the cluster manifest: CNPG
+# would log a failing backup every day with no object store to write to.
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: claude-queue-pg-daily
+  namespace: claude-queue
+spec:
+  schedule: "0 0 2 * * *" # daily at 02:00 (CNPG uses a 6-field cron format with seconds)
+  backupOwnerReference: self
+  cluster:
+    name: claude-queue-pg

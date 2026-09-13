@@ -46,3 +46,34 @@ spec:
     limits:
       cpu: 500m
       memory: 512Mi
+  # Continuous WAL archiving + daily base backups to Cloudflare R2 (S3-compatible).
+  # This cluster runs a SINGLE instance (instances: 1 above), so there is no replica to fail
+  # over to: until now the ONLY protection was Velero's nightly kopia snapshot of the pgdata
+  # PVC (the inheritedMetadata annotation above), i.e. a crash-consistent file copy taken at
+  # most once every 24h. That is a last resort, not a database backup - it cannot do
+  # point-in-time recovery, and restoring it means replaying whatever WAL state happened to
+  # be on disk at snapshot time. With barman archiving, every committed transaction reaches
+  # R2 within archive_timeout, and recovery can target any point inside the retention window.
+  #
+  # Own prefix inside the existing "studylifebackup" bucket rather than the bucket root that
+  # studylife-scale uses: barman lays out <destinationPath>/<serverName>/{base,wals}, and
+  # CNPG's retentionPolicy is enforced per barman server, so two clusters sharing a root
+  # would have their retention windows applied against the same tree. A separate prefix keeps
+  # the two archives completely disjoint. Deliberately NOT a separate bucket: the R2 API
+  # token is scoped to the buckets that exist today, so a new bucket would need a Cloudflare-
+  # side change and a token rotation for no benefit here.
+  #
+  # retentionPolicy 30d matches studylife-scale. The database is tiny (single-digit MB), so a
+  # month of daily gzip-compressed base backups plus their WAL segments stays far inside R2's
+  # free tier, and 30d is the window that actually makes a bad migration or an accidental
+  # DELETE recoverable rather than just a node failure.
+  backup:
+    barmanObjectStore:
+      destinationPath: "s3://studylifebackup/claude-queue"
+      endpointURL: "https://44ffca74c2d2f27b33389c8f54f95edf.r2.cloudflarestorage.com"
+      s3Credentials:
+        accessKeyId: { name: r2-backup-credentials, key: ACCESS_KEY_ID }
+        secretAccessKey: { name: r2-backup-credentials, key: ACCESS_SECRET_KEY }
+      wal: { compression: gzip }
+      data: { compression: gzip }
+    retentionPolicy: "30d"

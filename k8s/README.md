@@ -10,8 +10,8 @@ central repo managing it on this repo's behalf. `03-redis.yaml`, `04-api.yaml` a
 released `api`/`web` version into their image lines (over the semantic-release deploy key, so
 nothing in the cluster holds a write token for this repo), `k8s/flux-deploy/kustomization.yaml`
 is the subset Flux (read-only `k8s/flux/01-git-source.yaml`) actually applies. Everything else (`00-namespace.yaml`,
-`01-secrets-sealed.yaml`, `02-postgres.yaml`, `06-routes.yaml`, `07-netpol.yaml`) stays
-**bootstrap-only** - applied once by hand, never touched by Flux (homelab-infra's
+`01-secrets-sealed.yaml`, `01b-r2-backup-credentials-sealed.yaml`, `02-postgres.yaml`,
+`06-routes.yaml`, `07-netpol.yaml`, `08-scheduled-backup.yaml`) stays **bootstrap-only** - applied once by hand, never touched by Flux (homelab-infra's
 `flux/01-reconciler-rbac.yaml` least-privilege ClusterRole doesn't grant those kinds).
 
 ## Bootstrap (once)
