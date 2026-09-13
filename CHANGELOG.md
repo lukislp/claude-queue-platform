@@ -1,3 +1,10 @@
+## [1.2.25](https://github.com/lukislp/claude-queue-platform/compare/v1.2.24...v1.2.25) (2026-09-13)
+
+
+### Bug Fixes
+
+* **k8s:** pin the redis image by digest ([#63](https://github.com/lukislp/claude-queue-platform/issues/63)) ([012801c](https://github.com/lukislp/claude-queue-platform/commit/012801c04851a2db3ca715a13f3e0f87e1535069))
+
 ## [1.2.24](https://github.com/lukislp/claude-queue-platform/compare/v1.2.23...v1.2.24) (2026-09-13)
 
 
