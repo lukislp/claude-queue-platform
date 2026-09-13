@@ -1,3 +1,10 @@
+## [1.2.29](https://github.com/lukislp/claude-queue-platform/compare/v1.2.28...v1.2.29) (2026-09-13)
+
+
+### Bug Fixes
+
+* **k8s:** back up claude-queue-pg to R2 with WAL archiving ([#68](https://github.com/lukislp/claude-queue-platform/issues/68)) ([7423bf8](https://github.com/lukislp/claude-queue-platform/commit/7423bf809355f860ec49478bcc77ecb0831a7664))
+
 ## [1.2.28](https://github.com/lukislp/claude-queue-platform/compare/v1.2.27...v1.2.28) (2026-09-13)
 
 
