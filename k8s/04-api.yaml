@@ -63,22 +63,35 @@ spec:
               cpu: 500m
               memory: 512Mi
           # /health checks DB connectivity, not just that the process is listening.
+          # Every probe sets timeoutSeconds explicitly. The Kubernetes default of 1s is too
+          # tight for the arm64 Raspberry Pi nodes this runs on: the weakest node sits close
+          # to its memory limit, so an ordinary load spike pushes the probe past one second,
+          # liveness fails failureThreshold times in a row and kubelet restarts a container
+          # that was only busy.
+          # The startup probe's period grew with it so it stays longer than that timeout;
+          # its total budget went from 150s to 300s, which a boot-time migration on a Pi
+          # can genuinely need.
           startupProbe:
             httpGet:
               path: /health
               port: http
-            periodSeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
             failureThreshold: 30 # DB migrations run at boot
           livenessProbe:
             httpGet:
               path: /health
               port: http
             periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
           readinessProbe:
             httpGet:
               path: /health
               port: http
             periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 3
           volumeMounts:
             # Node writes its V8 compile cache into /tmp on every start.
             - name: tmp

@@ -42,16 +42,25 @@ spec:
             limits:
               cpu: 500m
               memory: 384Mi
+          # Every probe sets timeoutSeconds explicitly. The Kubernetes default of 1s is too
+          # tight for the arm64 Raspberry Pi nodes this runs on: the weakest node sits close
+          # to its memory limit, so an ordinary load spike pushes the probe past one second,
+          # liveness fails failureThreshold times in a row and kubelet restarts a container
+          # that was only busy.
           livenessProbe:
             httpGet:
               path: /
               port: http
             periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
           readinessProbe:
             httpGet:
               path: /
               port: http
             periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 3
           volumeMounts:
             # Next.js writes its runtime cache here; root filesystem stays untouched.
             - name: next-cache
