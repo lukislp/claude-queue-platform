@@ -33,6 +33,9 @@ jobs:
       - run: npm ci
         working-directory: apps/${{ matrix.app }}
       - run: npm run build
+      # apps/web lints with eslint-config-next; api and agent have no lint script yet, so
+      # --if-present is a deliberate no-op there.
+      - run: npm run lint --if-present
         working-directory: apps/${{ matrix.app }}
       # apps/web has no test suite yet, so --if-present is a deliberate no-op there; api and
       # agent run their jest suites.

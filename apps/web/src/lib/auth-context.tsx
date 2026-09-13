@@ -16,18 +16,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const refresh = async () => {
-    try {
-      const me = await api.get<User>('/auth/me');
-      setUser(me);
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 401) {
-        setUser(null);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Promise form on purpose: the state updates happen in the callbacks, not synchronously in
+  // the effect below (react-hooks/set-state-in-effect). A 401 means "not signed in"; any other
+  // error keeps the previous user, as before.
+  const refresh = () =>
+    api
+      .get<User>('/auth/me')
+      .then((me) => {
+        setUser(me);
+      })
+      .catch((err: unknown) => {
+        if (err instanceof ApiError && err.status === 401) {
+          setUser(null);
+        }
+      })
+      .finally(() => {
+        setLoading(false);
+      });
 
   useEffect(() => {
     refresh();
