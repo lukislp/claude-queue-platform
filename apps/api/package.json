@@ -45,7 +45,7 @@
     "@types/cookie-parser": "^1.4.7",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
-    "@types/node": "^26.5.0",
+    "@types/node": "^26.5.1",
     "@types/pg": "^8.11.10",
     "fast-check": "^4.10.0",
     "jest": "^30.5.0",
