@@ -1,3 +1,10 @@
+## [1.2.22](https://github.com/lukislp/claude-queue-platform/compare/v1.2.21...v1.2.22) (2026-09-13)
+
+
+### Bug Fixes
+
+* **web:** lint in CI on eslint 9, effects load state through promise callbacks ([#58](https://github.com/lukislp/claude-queue-platform/issues/58)) ([a8880fa](https://github.com/lukislp/claude-queue-platform/commit/a8880fa80615b07873285e96ca46834b9cf8915b))
+
 ## [1.2.21](https://github.com/lukislp/claude-queue-platform/compare/v1.2.20...v1.2.21) (2026-09-12)
 
 
