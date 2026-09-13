@@ -12,8 +12,10 @@ export default function DashboardPage() {
   const [description, setDescription] = useState('');
   const [creating, setCreating] = useState(false);
 
-  async function load() {
-    setProjects(await api.get<Project[]>('/projects'));
+  // Promise form on purpose: the state update happens in the callback, not synchronously in the
+  // effect below (react-hooks/set-state-in-effect).
+  function load() {
+    return api.get<Project[]>('/projects').then(setProjects);
   }
 
   useEffect(() => {

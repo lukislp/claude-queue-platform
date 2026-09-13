@@ -34,10 +34,9 @@ export default function ProjectPage() {
   const [editDescription, setEditDescription] = useState('');
   const [savingProject, setSavingProject] = useState(false);
 
-  const loadTasks = useCallback(async () => {
-    const list = await api.get<Task[]>(`/tasks?projectId=${id}`);
-    setTasks(list);
-  }, [id]);
+  // Promise form on purpose: the state update happens in the callback, not synchronously in the
+  // effects below (react-hooks/set-state-in-effect).
+  const loadTasks = useCallback(() => api.get<Task[]>(`/tasks?projectId=${id}`).then(setTasks), [id]);
 
   useEffect(() => {
     api.get<Project>(`/projects/${id}`).then(setProject);

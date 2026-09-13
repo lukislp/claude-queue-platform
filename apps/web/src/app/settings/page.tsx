@@ -16,15 +16,18 @@ export default function SettingsPage() {
   const [devices, setDevices] = useState<Device[] | null>(null);
   const [pairing, setPairing] = useState<{ code: string; expiresInSeconds: number } | null>(null);
 
-  async function loadConnection() {
-    const c = await api.get<ClaudeConnection>('/connection');
-    setConnection(c);
-    setMode(c.type);
-    setConcurrency(c.concurrencyLimit);
+  // Promise form on purpose: the state updates happen in the callbacks, not synchronously in
+  // the effect below (react-hooks/set-state-in-effect).
+  function loadConnection() {
+    return api.get<ClaudeConnection>('/connection').then((c) => {
+      setConnection(c);
+      setMode(c.type);
+      setConcurrency(c.concurrencyLimit);
+    });
   }
 
-  async function loadDevices() {
-    setDevices(await api.get<Device[]>('/devices'));
+  function loadDevices() {
+    return api.get<Device[]>('/devices').then(setDevices);
   }
 
   useEffect(() => {
