@@ -1,3 +1,11 @@
+## [1.2.26](https://github.com/lukislp/claude-queue-platform/compare/v1.2.25...v1.2.26) (2026-09-13)
+
+
+### Bug Fixes
+
+* **k8s:** disable the CNPG PodDisruptionBudget for the single-instance postgres ([#65](https://github.com/lukislp/claude-queue-platform/issues/65)) ([51fc339](https://github.com/lukislp/claude-queue-platform/commit/51fc339a8159a69c6ae7a66f1c82e83dc6f66604))
+* **k8s:** enforce Pod Security Standards "restricted" on the claude-queue namespace ([#64](https://github.com/lukislp/claude-queue-platform/issues/64)) ([addd8c3](https://github.com/lukislp/claude-queue-platform/commit/addd8c3244fe2862bf8fc0ec86ad8b265d11b9b1))
+
 ## [1.2.25](https://github.com/lukislp/claude-queue-platform/compare/v1.2.24...v1.2.25) (2026-09-13)
 
 
