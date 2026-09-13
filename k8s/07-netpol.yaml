@@ -159,6 +159,19 @@ spec:
       ports:
         - protocol: TCP
           port: 6443
+    # Barman needs to reach Cloudflare R2 over HTTPS for WAL archiving and base backups
+    # (k8s/02-postgres.yaml). Without this rule the namespace's default-deny egress silently
+    # blocks every upload: archive_command retries forever, pg_wal fills the volume and the
+    # instance eventually stops. R2 is an external endpoint behind Cloudflare's anycast
+    # ranges, so it cannot be expressed as a stable ipBlock - same 0.0.0.0/0:443 shape the
+    # api pod already uses for the Anthropic API, and the same one studylife-scale's
+    # allow-postgres-egress uses for this exact purpose.
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
