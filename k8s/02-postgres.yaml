@@ -18,6 +18,17 @@ spec:
   # the way: the "postgres" NetworkPolicy (07-netpol.yaml) never allowed instance-to-instance
   # traffic, since this cluster had only ever run single-instance before.
   instances: 1
+  # No operator-managed PodDisruptionBudget for this cluster. At instances: 1 CNPG still creates
+  # a "claude-queue-pg-primary" PDB with minAvailable: 1, which can never allow a disruption -
+  # "kubectl get pdb -A" showed it at disruptionsAllowed: 0 permanently, so "kubectl drain" of
+  # whichever node held the database hung until someone deleted that operator-owned PDB by hand
+  # (and the operator recreated it right after). There is no HA here to protect in the first
+  # place: a single instance is restarted wherever it lands either way, the PDB only ever made
+  # that restart require a human. enablePDB: false is CNPG's own documented answer for
+  # single-instance clusters. If this cluster ever goes to instances: 3, drop this line again -
+  # the primary PDB is genuinely wanted then (see homelab-infra
+  # cluster/00h-pod-security-and-drain-readiness.md for how to drain a node holding a primary).
+  enablePDB: false
   bootstrap:
     initdb:
       database: claude_queue
