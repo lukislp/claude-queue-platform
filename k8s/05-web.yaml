@@ -32,6 +32,9 @@ spec:
               drop: ["ALL"]
             seccompProfile:
               type: RuntimeDefault
+            # The Next.js standalone server only writes the two paths mounted below; the
+            # prerendered .next/server tree ships in the image and stays untouched.
+            readOnlyRootFilesystem: true
           resources:
             requests:
               cpu: 50m
@@ -53,9 +56,15 @@ spec:
             # Next.js writes its runtime cache here; root filesystem stays untouched.
             - name: next-cache
               mountPath: /app/.next/cache
+            # Node writes its V8 compile cache into /tmp, and Next uses it for request
+            # body spooling.
+            - name: tmp
+              mountPath: /tmp
       volumes:
         - name: next-cache
           emptyDir: {}
+        - name: tmp
+          emptyDir: {sizeLimit: 128Mi}
 ---
 apiVersion: v1
 kind: Service

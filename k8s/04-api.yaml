@@ -52,6 +52,9 @@ spec:
               drop: ["ALL"]
             seccompProfile:
               type: RuntimeDefault
+            # All state lives in Postgres and Redis - nothing is written into the image
+            # layer except Node's own temp files, which the emptyDir below covers.
+            readOnlyRootFilesystem: true
           resources:
             requests:
               cpu: 100m
@@ -76,6 +79,13 @@ spec:
               path: /health
               port: http
             periodSeconds: 5
+          volumeMounts:
+            # Node writes its V8 compile cache into /tmp on every start.
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {sizeLimit: 128Mi}
 ---
 apiVersion: v1
 kind: Service
