@@ -33,6 +33,7 @@ jobs:
       - run: npm ci
         working-directory: apps/${{ matrix.app }}
       - run: npm run build
+        working-directory: apps/${{ matrix.app }}
       # apps/web lints with eslint-config-next; api and agent have no lint script yet, so
       # --if-present is a deliberate no-op there.
       - run: npm run lint --if-present
