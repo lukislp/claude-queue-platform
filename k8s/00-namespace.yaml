@@ -1,4 +1,20 @@
+# Dedicated namespace. Pod Security Standards: "restricted" is hard-enforced - every workload
+# here already satisfies it (api/web run as a fixed non-root uid with all capabilities dropped
+# and a RuntimeDefault seccomp profile, redis likewise, and the CNPG-managed postgres pods are
+# restricted-compliant out of the box). Verified before enforcing with
+# "kubectl label --dry-run=server --overwrite ns claude-queue
+# pod-security.kubernetes.io/enforce=restricted", which reported no violating pod.
+# warn/audit stay on "restricted" as well, so any future workload that would need a looser
+# level surfaces instead of silently downgrading the namespace.
+#
+# NOT applied via Flux: kustomize-controller's least-privilege ClusterRole grants no permission
+# on the "namespaces" resource - only Deployments/Services/PVCs (see k8s/flux-deploy/
+# kustomization.yaml). Bootstrap-only, applied by hand (kubectl apply -f k8s/00-namespace.yaml).
 apiVersion: v1
 kind: Namespace
 metadata:
   name: claude-queue
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/audit: restricted
