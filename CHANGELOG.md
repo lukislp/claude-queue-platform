@@ -1,3 +1,11 @@
+## [1.2.23](https://github.com/lukislp/claude-queue-platform/compare/v1.2.22...v1.2.23) (2026-09-13)
+
+
+### Bug Fixes
+
+* **deps:** bump react and @types/react in /apps/web ([f4d19b9](https://github.com/lukislp/claude-queue-platform/commit/f4d19b960967c319b6939a5e60d0a691c1682ae2))
+* **deps:** bump the dev group across 3 directories with 1 update ([82f0df1](https://github.com/lukislp/claude-queue-platform/commit/82f0df1c56978afa36327d1f48d1c692877f2321))
+
 ## [1.2.22](https://github.com/lukislp/claude-queue-platform/compare/v1.2.21...v1.2.22) (2026-09-13)
 
 
