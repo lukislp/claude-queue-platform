@@ -1,3 +1,10 @@
+## [1.2.27](https://github.com/lukislp/claude-queue-platform/compare/v1.2.26...v1.2.27) (2026-09-13)
+
+
+### Bug Fixes
+
+* **k8s:** read-only root filesystem for api and web ([#66](https://github.com/lukislp/claude-queue-platform/issues/66)) ([6cd94af](https://github.com/lukislp/claude-queue-platform/commit/6cd94af6c0ce962950c38b65be17116e37f642e3))
+
 ## [1.2.26](https://github.com/lukislp/claude-queue-platform/compare/v1.2.25...v1.2.26) (2026-09-13)
 
 
