@@ -1,3 +1,10 @@
+## [1.2.30](https://github.com/lukislp/claude-queue-platform/compare/v1.2.29...v1.2.30) (2026-09-15)
+
+
+### Bug Fixes
+
+* **docker:** run the api and web images as the unprivileged node user ([#78](https://github.com/lukislp/claude-queue-platform/issues/78)) ([0562105](https://github.com/lukislp/claude-queue-platform/commit/0562105b9fffd4308a4b2652451bdd98e30b35cc))
+
 ## [1.2.29](https://github.com/lukislp/claude-queue-platform/compare/v1.2.28...v1.2.29) (2026-09-13)
 
 
