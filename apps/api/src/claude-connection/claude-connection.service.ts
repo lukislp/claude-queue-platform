@@ -64,9 +64,9 @@ export class ClaudeConnectionService {
       source: 'aliases',
       models: [
         { id: 'claude-fable-5', displayName: 'Fable 5' },
-        { id: 'opus', displayName: 'Opus (jeweils aktuellste Version)' },
-        { id: 'sonnet', displayName: 'Sonnet (jeweils aktuellste Version)' },
-        { id: 'haiku', displayName: 'Haiku (jeweils aktuellste Version)' },
+        { id: 'opus', displayName: 'Opus (always the latest version)' },
+        { id: 'sonnet', displayName: 'Sonnet (always the latest version)' },
+        { id: 'haiku', displayName: 'Haiku (always the latest version)' },
       ],
     };
   }
