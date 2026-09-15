@@ -15,7 +15,7 @@ export class AuthService {
   async register(dto: RegisterDto) {
     const existing = await this.db.query('SELECT id FROM users WHERE email = $1', [dto.email]);
     if (existing.rowCount && existing.rowCount > 0) {
-      throw new ConflictException('Diese E-Mail-Adresse ist bereits registriert.');
+      throw new ConflictException('This email address is already registered.');
     }
     const passwordHash = await bcrypt.hash(dto.password, 12);
     const userId = uuid();
@@ -36,9 +36,9 @@ export class AuthService {
       [dto.email],
     );
     const user = result.rows[0];
-    if (!user) throw new UnauthorizedException('E-Mail oder Passwort ist falsch.');
+    if (!user) throw new UnauthorizedException('Email or password is incorrect.');
     const valid = await bcrypt.compare(dto.password, user.password_hash);
-    if (!valid) throw new UnauthorizedException('E-Mail oder Passwort ist falsch.');
+    if (!valid) throw new UnauthorizedException('Email or password is incorrect.');
     return this.buildAuthResult(user.id, dto.email);
   }
 

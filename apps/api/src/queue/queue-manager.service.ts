@@ -79,7 +79,7 @@ export class QueueManagerService implements OnModuleDestroy {
     const taskResult = await this.db.query('SELECT * FROM tasks WHERE id = $1', [taskId]);
     const task = taskResult.rows[0];
     if (!task) return;
-    // Vom Nutzer abgebrochene/pausierte Tasks nicht mehr ausführen.
+    // Do not run tasks the user has cancelled or paused.
     if (task.status === 'CANCELED' || task.status === 'PAUSED') return;
 
     const connResult = await this.db.query(
@@ -88,7 +88,7 @@ export class QueueManagerService implements OnModuleDestroy {
     );
     const connection = connResult.rows[0];
     if (!connection?.encrypted_api_key) {
-      await this.markFailed(userId, taskId, 'Kein API-Key hinterlegt.');
+      await this.markFailed(userId, taskId, 'No API key stored.');
       return;
     }
 
@@ -134,13 +134,13 @@ export class QueueManagerService implements OnModuleDestroy {
         [retryAt, taskId],
       );
       await this.emitUpdated(userId, taskId);
-      // Automatisch verzögert erneut einreihen - kein manuelles Eingreifen nötig.
+      // Re-enqueue automatically with a delay - no manual intervention needed.
       await this.getQueue(userId).add('run-task', { taskId }, { delay: delayMs });
-      this.logger.log(`Task ${taskId} pausiert wegen Rate-/Usage-Limit, Retry in ${delayMs}ms`);
+      this.logger.log(`Task ${taskId} paused because of a rate/usage limit, retrying in ${delayMs}ms`);
       return;
     }
 
-    await this.markFailed(userId, taskId, err?.message ?? 'Unbekannter Fehler');
+    await this.markFailed(userId, taskId, err?.message ?? 'Unknown error');
   }
 
   private async markFailed(userId: string, taskId: string, error: string) {

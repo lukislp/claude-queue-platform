@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 
-/** Baut eine gefälschte DbService, deren query() der Reihe nach die übergebenen Zeilen liefert. */
+/** Builds a fake DbService whose query() returns the given rows in order. */
 function fakeDb(rows: (Record<string, any> | null)[]) {
   const query = jest.fn();
   for (const row of rows) {

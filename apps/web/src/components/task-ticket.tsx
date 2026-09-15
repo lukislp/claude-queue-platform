@@ -5,13 +5,13 @@ import { api, Task, TaskStatus } from '@/lib/api';
 import { getSocket } from '@/lib/socket';
 
 const STATUS_CONFIG: Record<TaskStatus, { label: string; color: string; pulse?: boolean }> = {
-  QUEUED: { label: 'Wartet', color: 'var(--color-queued)' },
-  RUNNING: { label: 'Läuft', color: 'var(--color-running)', pulse: true },
-  PAUSED_RATE_LIMIT: { label: 'Pausiert (Limit)', color: 'var(--color-paused)', pulse: true },
-  PAUSED: { label: 'Pausiert', color: 'var(--color-paused)' },
-  CANCELED: { label: 'Abgebrochen', color: 'var(--color-text-muted)' },
-  COMPLETED: { label: 'Fertig', color: 'var(--color-completed)' },
-  FAILED: { label: 'Fehlgeschlagen', color: 'var(--color-failed)' },
+  QUEUED: { label: 'Queued', color: 'var(--color-queued)' },
+  RUNNING: { label: 'Running', color: 'var(--color-running)', pulse: true },
+  PAUSED_RATE_LIMIT: { label: 'Paused (limit)', color: 'var(--color-paused)', pulse: true },
+  PAUSED: { label: 'Paused', color: 'var(--color-paused)' },
+  CANCELED: { label: 'Cancelled', color: 'var(--color-text-muted)' },
+  COMPLETED: { label: 'Done', color: 'var(--color-completed)' },
+  FAILED: { label: 'Failed', color: 'var(--color-failed)' },
 };
 
 export function StatusDot({ status }: { status: TaskStatus }) {
@@ -39,7 +39,7 @@ export function StatusBadge({ status }: { status: TaskStatus }) {
 
 function formatTime(iso: string | null) {
   if (!iso) return '—';
-  return new Date(iso).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'medium' });
+  return new Date(iso).toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'medium' });
 }
 
 function formatSize(bytes: number) {
@@ -48,13 +48,13 @@ function formatSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-/** Übersetzt eine rohe stream-json-Logzeile in eine lesbare Darstellung (null = ausblenden). */
+/** Turns a raw stream-json log line into a readable representation (null = hide it). */
 function describeLogLine(message: string): string | null {
   if (message.startsWith('[stderr]')) return message;
   try {
     const p = JSON.parse(message);
     if (p.type === 'system' && p.subtype === 'init') {
-      return `▶ Session gestartet · Modell: ${p.model ?? 'Standard'} · Ordner: ${p.cwd ?? '?'}`;
+      return `▶ Session started · model: ${p.model ?? 'default'} · directory: ${p.cwd ?? '?'}`;
     }
     if (p.type === 'assistant' && Array.isArray(p.message?.content)) {
       const parts: string[] = [];
@@ -69,18 +69,18 @@ function describeLogLine(message: string): string | null {
     }
     if (p.type === 'result') {
       const u = p.usage;
-      const tokens = u ? ` · Tokens: ${u.input_tokens ?? 0} rein / ${u.output_tokens ?? 0} raus` : '';
-      const cost = typeof p.total_cost_usd === 'number' ? ` · Kosten: $${p.total_cost_usd.toFixed(4)}` : '';
-      const dur = typeof p.duration_ms === 'number' ? ` · Dauer: ${Math.round(p.duration_ms / 1000)}s` : '';
-      return `${p.is_error ? '✖ Fehler' : '✔ Abgeschlossen'}${tokens}${cost}${dur}`;
+      const tokens = u ? ` · tokens: ${u.input_tokens ?? 0} in / ${u.output_tokens ?? 0} out` : '';
+      const cost = typeof p.total_cost_usd === 'number' ? ` · cost: $${p.total_cost_usd.toFixed(4)}` : '';
+      const dur = typeof p.duration_ms === 'number' ? ` · duration: ${Math.round(p.duration_ms / 1000)}s` : '';
+      return `${p.is_error ? '✖ Error' : '✔ Completed'}${tokens}${cost}${dur}`;
     }
-    return null; // sonstige Events (Tool-Ergebnisse, Deltas) ausblenden
+    return null; // hide any other events (tool results, deltas)
   } catch {
     return message;
   }
 }
 
-/** Modal mit Live-Logs eines Tasks: lädt die Historie und streamt neue Zeilen per WebSocket. */
+/** Modal with a task's live logs: loads the history and streams new lines over WebSocket. */
 function TaskLogsModal({ task, onClose }: { task: Task; onClose: () => void }) {
   const [lines, setLines] = useState<string[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -125,7 +125,7 @@ function TaskLogsModal({ task, onClose }: { task: Task; onClose: () => void }) {
             </span>
           </div>
           <button onClick={onClose} className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
-            Schließen ✕
+            Close ✕
           </button>
         </div>
         <div
@@ -133,9 +133,9 @@ function TaskLogsModal({ task, onClose }: { task: Task; onClose: () => void }) {
           className="flex-1 overflow-y-auto whitespace-pre-wrap px-4 py-3 font-[family-name:var(--font-mono)] text-xs leading-relaxed text-[var(--color-text)]"
         >
           {!loaded ? (
-            'Lade Logs …'
+            'Loading logs …'
           ) : rendered.length === 0 ? (
-            'Noch keine Logs vorhanden.'
+            'No logs yet.'
           ) : (
             rendered.map((l, i) => (
               <div key={i} className="mb-2 border-b border-dashed border-[var(--color-border)] pb-2 last:border-b-0">
@@ -158,7 +158,7 @@ interface TaskTicketProps {
   onRetry?: (id: string) => void;
 }
 
-/** Eine Task-Zeile im "Ticket/Manifest"-Look: Stub mit kurzer ID links, Inhalt rechts. */
+/** A task row in a "ticket/manifest" look: a stub with the short ID on the left, content on the right. */
 export function TaskTicket({ task, onDelete, onCancel, onPause, onResume, onRetry }: TaskTicketProps) {
   const [showLogs, setShowLogs] = useState(false);
   const cfg = STATUS_CONFIG[task.status];
@@ -177,11 +177,11 @@ export function TaskTicket({ task, onDelete, onCancel, onPause, onResume, onRetr
           <StatusBadge status={task.status} />
         </div>
         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 font-[family-name:var(--font-mono)] text-[11px] text-[var(--color-text-muted)]">
-          {task.model && <span>Modell {task.model}</span>}
-          {task.assignedDeviceName && <span>Gerät {task.assignedDeviceName}</span>}
-          <span>erstellt {formatTime(task.createdAt)}</span>
-          {task.startedAt && <span>gestartet {formatTime(task.startedAt)}</span>}
-          {task.completedAt && <span>beendet {formatTime(task.completedAt)}</span>}
+          {task.model && <span>model {task.model}</span>}
+          {task.assignedDeviceName && <span>device {task.assignedDeviceName}</span>}
+          <span>created {formatTime(task.createdAt)}</span>
+          {task.startedAt && <span>started {formatTime(task.startedAt)}</span>}
+          {task.completedAt && <span>finished {formatTime(task.completedAt)}</span>}
           {task.retryAt && task.status === 'PAUSED_RATE_LIMIT' && (
             <span style={{ color: 'var(--color-paused)' }}>Retry {formatTime(task.retryAt)}</span>
           )}
@@ -199,7 +199,7 @@ export function TaskTicket({ task, onDelete, onCancel, onPause, onResume, onRetr
         {task.outputFiles && task.outputFiles.length > 0 && (
           <div className="mt-2 rounded-md border border-dashed border-[var(--color-border)] px-2 py-1.5">
             <p className="mb-1 text-[10px] uppercase tracking-wide text-[var(--color-text-muted)]">
-              Erstellte/geänderte Dateien
+              Created/changed files
             </p>
             <ul className="space-y-0.5 font-[family-name:var(--font-mono)] text-xs text-[var(--color-text)]">
               {task.outputFiles.map((f) => (
@@ -226,7 +226,7 @@ export function TaskTicket({ task, onDelete, onCancel, onPause, onResume, onRetr
                   onClick={() => onPause(task.id)}
                   className="text-[var(--color-text-muted)] hover:text-[var(--color-paused)]"
                 >
-                  ⏸ Pausieren
+                  ⏸ Pause
                 </button>
               )}
               {task.status === 'PAUSED' && onResume && (
@@ -234,7 +234,7 @@ export function TaskTicket({ task, onDelete, onCancel, onPause, onResume, onRetr
                   onClick={() => onResume(task.id)}
                   className="text-[var(--color-text-muted)] hover:text-[var(--color-running)]"
                 >
-                  ▶ Fortsetzen
+                  ▶ Resume
                 </button>
               )}
               {(isActive || task.status === 'PAUSED') && onCancel && (
@@ -242,7 +242,7 @@ export function TaskTicket({ task, onDelete, onCancel, onPause, onResume, onRetr
                   onClick={() => onCancel(task.id)}
                   className="text-[var(--color-text-muted)] hover:text-[var(--color-failed)]"
                 >
-                  ✖ Abbrechen
+                  ✖ Cancel
                 </button>
               )}
               {task.status === 'FAILED' && onRetry && (
@@ -250,7 +250,7 @@ export function TaskTicket({ task, onDelete, onCancel, onPause, onResume, onRetr
                   onClick={() => onRetry(task.id)}
                   className="text-[var(--color-text-muted)] hover:text-[var(--color-running)]"
                 >
-                  🔁 Erneut versuchen
+                  🔁 Retry
                 </button>
               )}
               {!isActive && task.status !== 'PAUSED' && onDelete && (
@@ -258,7 +258,7 @@ export function TaskTicket({ task, onDelete, onCancel, onPause, onResume, onRetr
                   onClick={() => onDelete(task.id)}
                   className="text-[var(--color-text-muted)] hover:text-[var(--color-failed)]"
                 >
-                  Entfernen
+                  Remove
                 </button>
               )}
             </div>

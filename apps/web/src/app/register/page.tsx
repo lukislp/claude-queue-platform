@@ -24,7 +24,7 @@ export default function RegisterPage() {
       await refresh();
       router.push('/dashboard');
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Registrierung fehlgeschlagen.');
+      setError(err instanceof ApiError ? err.message : 'Registration failed.');
     } finally {
       setSubmitting(false);
     }
@@ -33,17 +33,17 @@ export default function RegisterPage() {
   return (
     <main className="flex min-h-screen items-center justify-center px-4">
       <Card className="w-full max-w-sm p-6">
-        <h1 className="mb-1 text-lg font-semibold">Konto erstellen</h1>
+        <h1 className="mb-1 text-lg font-semibold">Create an account</h1>
         <p className="mb-6 text-sm text-[var(--color-text-muted)]">
-          Eigenes Konto für diese Plattform - unabhängig von deinem Claude-Zugang.
+          A separate account for this platform - independent of your Claude access.
         </p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label>E-Mail</Label>
+            <Label>Email</Label>
             <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div>
-            <Label>Passwort (mind. 8 Zeichen)</Label>
+            <Label>Password (at least 8 characters)</Label>
             <Input
               type="password"
               required
@@ -54,13 +54,13 @@ export default function RegisterPage() {
           </div>
           {error && <p className="text-sm text-[var(--color-failed)]">{error}</p>}
           <Button type="submit" disabled={submitting} className="w-full">
-            {submitting ? 'Erstelle Konto …' : 'Konto erstellen'}
+            {submitting ? 'Creating account …' : 'Create account'}
           </Button>
         </form>
         <p className="mt-4 text-sm text-[var(--color-text-muted)]">
-          Schon registriert?{' '}
+          Already registered?{' '}
           <Link href="/login" className="text-[var(--color-brand)] hover:underline">
-            Anmelden
+            Sign in
           </Link>
         </p>
       </Card>

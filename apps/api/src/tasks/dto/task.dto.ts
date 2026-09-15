@@ -8,7 +8,7 @@ export class CreateTaskDto {
   @MinLength(1)
   prompt: string;
 
-  // Modell-ID oder -Alias (z.B. "claude-sonnet-5", "opus"); leer = Standardmodell.
+  // Model ID or alias (e.g. "claude-sonnet-5", "opus"); empty = the default model.
   @IsOptional()
   @IsString()
   @MaxLength(100)

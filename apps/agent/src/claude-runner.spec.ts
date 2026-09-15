@@ -21,7 +21,7 @@ describe('RATE_LIMIT_PATTERNS', () => {
   });
 
   it('does not match unrelated text', () => {
-    expect(matches('Fertig! Die Webseite liegt unter index.html')).toBe(false);
+    expect(matches('Done! The website is at index.html')).toBe(false);
   });
 });
 
