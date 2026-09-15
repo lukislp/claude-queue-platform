@@ -1,3 +1,10 @@
+## [1.2.31](https://github.com/lukislp/claude-queue-platform/compare/v1.2.30...v1.2.31) (2026-09-15)
+
+
+### Bug Fixes
+
+* **k8s:** include the Redis volume in the nightly backup ([#80](https://github.com/lukislp/claude-queue-platform/issues/80)) ([2f575cd](https://github.com/lukislp/claude-queue-platform/commit/2f575cd9614a4de1332923ea8d43e9b826977c1d))
+
 ## [1.2.30](https://github.com/lukislp/claude-queue-platform/compare/v1.2.29...v1.2.30) (2026-09-15)
 
 
