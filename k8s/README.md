@@ -62,7 +62,7 @@ kubectl -n claude-queue port-forward svc/api 4000:4000
 ```
 
 Open `http://localhost:3000/register`, create an account, then follow the platform
-README's "Ersten Nutzer anlegen und testen" section.
+README's "Create the first user and try it out" section.
 
 ## Watch it
 
