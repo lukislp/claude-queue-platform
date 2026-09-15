@@ -40,6 +40,13 @@ spec:
     metadata:
       labels:
         app: redis
+      annotations:
+        # Opt-in to homelab-infra's nightly Velero PVC backup. That schedule runs with
+        # snapshotVolumes and defaultVolumesToFsBackup both off, so a volume is only captured
+        # when its pod asks for it here - without this annotation the queue state was backed up
+        # nowhere, while thirteen other workloads in the cluster were. /data holds the AOF, so a
+        # crash-consistent copy is what a restore needs.
+        backup.velero.io/backup-volumes: data
     spec:
       automountServiceAccountToken: false
       securityContext:
