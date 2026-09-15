@@ -40,8 +40,8 @@ services:
     environment:
       DATABASE_URL: postgresql://claude_queue:claude_queue@postgres:5432/claude_queue
       REDIS_URL: redis://redis:6379
-      JWT_SECRET: ${JWT_SECRET:?bitte in .env setzen}
-      CLAUDE_KEY_ENCRYPTION_SECRET: ${CLAUDE_KEY_ENCRYPTION_SECRET:?bitte in .env setzen}
+      JWT_SECRET: ${JWT_SECRET:?please set it in .env}
+      CLAUDE_KEY_ENCRYPTION_SECRET: ${CLAUDE_KEY_ENCRYPTION_SECRET:?please set it in .env}
       WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:3000}
       PORT: 4000
     ports:

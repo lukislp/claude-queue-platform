@@ -10,7 +10,7 @@ export class HealthController {
     try {
       await this.db.query('SELECT 1');
     } catch {
-      throw new ServiceUnavailableException('Datenbank nicht erreichbar.');
+      throw new ServiceUnavailableException('Database is unreachable.');
     }
     return { status: 'ok' };
   }

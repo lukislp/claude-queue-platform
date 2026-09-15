@@ -26,8 +26,8 @@ export class DbService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async runMigrations() {
-    // Sucht das Migrationsverzeichnis relativ zum Projekt-Root (funktioniert in
-    // Dev (ts-node) genauso wie im gebauten dist/-Ordner und im Docker-Image).
+    // Looks for the migrations directory relative to the project root (works in dev
+    // (ts-node) just as well as in the built dist/ directory and in the Docker image).
     const candidates = [
       path.join(__dirname, '..', '..', '..', '..', 'migrations'),
       path.join(process.cwd(), '..', '..', 'migrations'),
@@ -36,7 +36,7 @@ export class DbService implements OnModuleInit, OnModuleDestroy {
     ];
     const dir = candidates.find((c) => fs.existsSync(c));
     if (!dir) {
-      this.logger.warn('Migrationsverzeichnis nicht gefunden - überspringe Migration.');
+      this.logger.warn('Migrations directory not found - skipping migrations.');
       return;
     }
     const files = fs

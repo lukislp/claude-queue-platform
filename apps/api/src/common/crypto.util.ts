@@ -6,13 +6,13 @@ function getKey(): Buffer {
   const secret = process.env.CLAUDE_KEY_ENCRYPTION_SECRET;
   if (!secret || secret.length < 32) {
     throw new Error(
-      'CLAUDE_KEY_ENCRYPTION_SECRET muss gesetzt sein und mindestens 32 Zeichen lang sein.',
+      'CLAUDE_KEY_ENCRYPTION_SECRET must be set and at least 32 characters long.',
     );
   }
   return crypto.createHash('sha256').update(secret).digest();
 }
 
-/** Verschlüsselt einen Klartext-String, Rückgabe als "iv:authTag:ciphertext" (hex). */
+/** Encrypts a plaintext string, returned as "iv:authTag:ciphertext" (hex). */
 export function encryptSecret(plainText: string): string {
   const key = getKey();
   const iv = crypto.randomBytes(12);
@@ -22,7 +22,7 @@ export function encryptSecret(plainText: string): string {
   return `${iv.toString('hex')}:${authTag.toString('hex')}:${encrypted.toString('hex')}`;
 }
 
-/** Entschlüsselt einen mit encryptSecret erzeugten String. */
+/** Decrypts a string produced by encryptSecret. */
 export function decryptSecret(payload: string): string {
   const key = getKey();
   const [ivHex, authTagHex, dataHex] = payload.split(':');
@@ -35,7 +35,7 @@ export function decryptSecret(payload: string): string {
   return decrypted.toString('utf8');
 }
 
-/** Erzeugt ein zufälliges, URL-sicheres Token (z.B. für Device-Pairing). */
+/** Generates a random, URL-safe token (e.g. for device pairing). */
 export function randomToken(bytes = 32): string {
   return crypto.randomBytes(bytes).toString('base64url');
 }

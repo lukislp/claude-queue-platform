@@ -8,7 +8,7 @@ import { loadConfig, saveConfig, AgentConfig, configPath } from './config';
 import { runClaudeTask, resolveClaudeInvocation, abortRun } from './claude-runner';
 import { listOutputFiles } from './list-output-files';
 
-// Ausstehende Rate-Limit-Retries pro Task, damit sie bei Abbruch/Pause storniert werden können.
+// Pending rate-limit retries per task, so they can be cancelled on cancel/pause.
 const pendingRetries = new Map<string, NodeJS.Timeout>();
 
 const args = process.argv.slice(2);
@@ -38,7 +38,7 @@ async function pair() {
   const name = getArg('name') ?? os.hostname();
   if (!url || !code) {
     console.error(
-      'Nutzung: claude-queue-agent pair --url <backend-url> --code <PAIRING-CODE> [--name "Mein Laptop"] [--baseDir <Pfad>]',
+      'Usage: claude-queue-agent pair --url <backend-url> --code <PAIRING-CODE> [--name "My laptop"] [--baseDir <path>]',
     );
     process.exit(1);
   }
@@ -49,7 +49,7 @@ async function pair() {
     body: JSON.stringify({ code, deviceName: name }),
   });
   if (!res.ok) {
-    console.error('Pairing fehlgeschlagen:', await res.text());
+    console.error('Pairing failed:', await res.text());
     process.exit(1);
   }
   const data = (await res.json()) as { deviceId: string; deviceToken: string };
@@ -60,8 +60,8 @@ async function pair() {
     baseDir: getArg('baseDir') ?? process.cwd(),
   };
   saveConfig(config);
-  console.log(`Gerät "${name}" erfolgreich gekoppelt (gespeichert in ${configPath()}).`);
-  console.log('Starte den Agenten mit: claude-queue-agent start');
+  console.log(`Device "${name}" paired successfully (stored in ${configPath()}).`);
+  console.log('Start the agent with: claude-queue-agent start');
 }
 
 interface TaskAssignPayload {
@@ -87,7 +87,7 @@ async function handleTask(socket: Socket, config: AgentConfig, payload: TaskAssi
 
   if (!fs.existsSync(cwd)) fs.mkdirSync(cwd, { recursive: true });
 
-  console.log(`[Task ${payload.taskId}] Starte Ausführung in ${cwd}${payload.resumeSessionId ? ' (Fortsetzung nach Pause)' : ''}`);
+  console.log(`[Task ${payload.taskId}] Starting execution in ${cwd}${payload.resumeSessionId ? ' (resuming after a pause)' : ''}`);
   socket.emit('agent:status', { taskId: payload.taskId, status: 'RUNNING' });
 
   const result = await runClaudeTask(payload.taskId, payload.prompt, cwd, payload.resumeSessionId, payload.model, (line) => {
@@ -96,7 +96,7 @@ async function handleTask(socket: Socket, config: AgentConfig, payload: TaskAssi
 
   if (result.status === 'aborted') {
     if (result.abortReason === 'pause') {
-      // Session-ID mitgeben, damit "Fortsetzen" die Claude-Session wieder aufnehmen kann.
+      // Pass the session ID along so "resume" can pick the Claude session back up.
       socket.emit('agent:status', {
         taskId: payload.taskId,
         status: 'PAUSED',
@@ -104,7 +104,7 @@ async function handleTask(socket: Socket, config: AgentConfig, payload: TaskAssi
       });
     }
     console.log(
-      `[Task ${payload.taskId}] ${result.abortReason === 'pause' ? 'Pausiert' : 'Abgebrochen'} auf Nutzerwunsch.`,
+      `[Task ${payload.taskId}] ${result.abortReason === 'pause' ? 'Paused' : 'Cancelled'} on the user's request.`,
     );
     return;
   }
@@ -117,7 +117,7 @@ async function handleTask(socket: Socket, config: AgentConfig, payload: TaskAssi
       claudeSessionId: result.sessionId,
       files: safeListOutputFiles(cwd),
     });
-    console.log(`[Task ${payload.taskId}] Abgeschlossen.`);
+    console.log(`[Task ${payload.taskId}] Completed.`);
     return;
   }
 
@@ -131,7 +131,7 @@ async function handleTask(socket: Socket, config: AgentConfig, payload: TaskAssi
     });
     const delay = Math.max(retryAt.getTime() - Date.now(), 1000);
     console.log(
-      `[Task ${payload.taskId}] Usage-/Rate-Limit erreicht. Automatischer Retry um ${retryAt.toLocaleString()} - kein Eingreifen nötig.`,
+      `[Task ${payload.taskId}] Usage/rate limit hit. Automatic retry at ${retryAt.toLocaleString()} - no action needed.`,
     );
     const timer = setTimeout(() => {
       pendingRetries.delete(payload.taskId);
@@ -148,34 +148,34 @@ async function handleTask(socket: Socket, config: AgentConfig, payload: TaskAssi
     claudeSessionId: result.sessionId,
     files: safeListOutputFiles(cwd),
   });
-  console.log(`[Task ${payload.taskId}] Fehlgeschlagen: ${result.error}`);
+  console.log(`[Task ${payload.taskId}] Failed: ${result.error}`);
 }
 
 async function start() {
   const config = loadConfig();
   if (!config) {
-    console.error('Kein gekoppeltes Gerät gefunden. Zuerst ausführen: claude-queue-agent pair --url <backend-url> --code <CODE>');
+    console.error('No paired device found. Run this first: claude-queue-agent pair --url <backend-url> --code <CODE>');
     process.exit(1);
   }
 
   const claudeOk = await checkClaudeInstalled();
   if (!claudeOk) {
     console.warn(
-      '⚠️  "claude" CLI wurde nicht gefunden. Bitte Claude Code installieren und "claude login" ausführen, ' +
-        'bevor Tasks zugewiesen werden. Der Agent verbindet sich trotzdem, Tasks würden aber fehlschlagen.',
+      '⚠️  The "claude" CLI was not found. Install Claude Code and run "claude login" before ' +
+        'tasks are assigned. The agent still connects, but tasks would fail.',
     );
   }
 
-  console.log(`Verbinde mit ${config.backendUrl} ...`);
+  console.log(`Connecting to ${config.backendUrl} ...`);
   const socket: Socket = io(config.backendUrl, {
     auth: { mode: 'agent', deviceToken: config.deviceToken },
     reconnection: true,
     reconnectionDelay: 2000,
   });
 
-  socket.on('connect', () => console.log('✅ Verbunden. Warte auf zugewiesene Tasks ...'));
-  socket.on('disconnect', () => console.log('❌ Verbindung getrennt. Versuche automatisch erneut zu verbinden ...'));
-  socket.on('connect_error', (err) => console.error('Verbindungsfehler:', err.message));
+  socket.on('connect', () => console.log('✅ Connected. Waiting for assigned tasks ...'));
+  socket.on('disconnect', () => console.log('❌ Disconnected. Reconnecting automatically ...'));
+  socket.on('connect_error', (err) => console.error('Connection error:', err.message));
 
   socket.on('task:abort', ({ taskId, reason }: { taskId: string; reason: 'cancel' | 'pause' }) => {
     const killed = abortRun(taskId, reason);
@@ -185,14 +185,14 @@ async function start() {
       pendingRetries.delete(taskId);
     }
     console.log(
-      `[Task ${taskId}] ${reason === 'pause' ? 'Pause' : 'Abbruch'} angefordert` +
-        (killed ? ' - laufender Prozess wird beendet.' : timer ? ' - geplanter Retry storniert.' : '.'),
+      `[Task ${taskId}] ${reason === 'pause' ? 'Pause' : 'Cancel'} requested` +
+        (killed ? ' - terminating the running process.' : timer ? ' - scheduled retry cancelled.' : '.'),
     );
   });
 
   socket.on('task:assign', (payload: TaskAssignPayload) => {
     handleTask(socket, config, payload).catch((err) => {
-      console.error(`[Task ${payload.taskId}] Unerwarteter Fehler:`, err);
+      console.error(`[Task ${payload.taskId}] Unexpected error:`, err);
       socket.emit('agent:status', { taskId: payload.taskId, status: 'FAILED', error: String(err) });
     });
   });
@@ -201,7 +201,7 @@ async function start() {
 function configure() {
   const config = loadConfig();
   if (!config) {
-    console.error('Kein gekoppeltes Gerät gefunden. Zuerst ausführen: claude-queue-agent pair --url <backend-url> --code <CODE>');
+    console.error('No paired device found. Run this first: claude-queue-agent pair --url <backend-url> --code <CODE>');
     process.exit(1);
   }
   const baseDir = getArg('baseDir');
@@ -209,13 +209,13 @@ function configure() {
     const resolved = path.resolve(baseDir);
     config.baseDir = resolved;
     saveConfig(config);
-    console.log(`baseDir gesetzt auf: ${resolved}`);
-    console.log('Hinweis: den laufenden Agenten neu starten, damit die Änderung wirkt.');
+    console.log(`baseDir set to: ${resolved}`);
+    console.log('Note: restart the running agent for the change to take effect.');
   } else {
-    console.log(`Aktuelle Konfiguration (${configPath()}):`);
+    console.log(`Current configuration (${configPath()}):`);
     console.log(`  backendUrl: ${config.backendUrl}`);
     console.log(`  baseDir:    ${config.baseDir}`);
-    console.log('Ändern mit: claude-queue-agent config --baseDir <Pfad>');
+    console.log('Change it with: claude-queue-agent config --baseDir <path>');
   }
 }
 
@@ -223,10 +223,10 @@ async function main() {
   if (command === 'pair') return pair();
   if (command === 'start') return start();
   if (command === 'config') return configure();
-  console.log('Verfügbare Befehle:');
-  console.log('  claude-queue-agent pair --url <backend-url> --code <PAIRING-CODE> [--name "Mein Laptop"]');
+  console.log('Available commands:');
+  console.log('  claude-queue-agent pair --url <backend-url> --code <PAIRING-CODE> [--name "My laptop"]');
   console.log('  claude-queue-agent start');
-  console.log('  claude-queue-agent config [--baseDir <Pfad>]   Standard-Arbeitsverzeichnis anzeigen/ändern');
+  console.log('  claude-queue-agent config [--baseDir <path>]   Show/change the default working directory');
 }
 
 main();

@@ -19,7 +19,7 @@ export class TasksService {
       dto.projectId,
     ]);
     const project = projectResult.rows[0];
-    if (!project) throw new NotFoundException('Projekt nicht gefunden.');
+    if (!project) throw new NotFoundException('Project not found.');
     if (project.user_id !== userId) throw new ForbiddenException();
 
     const id = uuid();
@@ -79,11 +79,11 @@ export class TasksService {
     return task;
   }
 
-  /** Bricht einen Task endgültig ab; ein laufender Prozess wird auf dem Gerät beendet. */
+  /** Cancels a task for good; a running process is terminated on the device. */
   async cancel(userId: string, taskId: string) {
     const task = await this.loadOwned(userId, taskId);
     if (['COMPLETED', 'FAILED', 'CANCELED'].includes(task.status)) {
-      throw new BadRequestException('Task ist bereits beendet.');
+      throw new BadRequestException('The task has already finished.');
     }
     if (task.assigned_device_id) {
       this.realtime.sendAbortToDevice(task.assigned_device_id, taskId, 'cancel');
@@ -99,11 +99,11 @@ export class TasksService {
     return updated;
   }
 
-  /** Pausiert einen Task; die Claude-Session bleibt erhalten und kann fortgesetzt werden. */
+  /** Pauses a task; the Claude session is preserved and can be resumed. */
   async pause(userId: string, taskId: string) {
     const task = await this.loadOwned(userId, taskId);
     if (!['QUEUED', 'RUNNING', 'PAUSED_RATE_LIMIT'].includes(task.status)) {
-      throw new BadRequestException('Nur wartende oder laufende Tasks können pausiert werden.');
+      throw new BadRequestException('Only queued or running tasks can be paused.');
     }
     if (task.assigned_device_id && task.status !== 'QUEUED') {
       this.realtime.sendAbortToDevice(task.assigned_device_id, taskId, 'pause');
@@ -118,11 +118,11 @@ export class TasksService {
     return updated;
   }
 
-  /** Setzt einen pausierten Task fort (Wiedereinreihung, ggf. mit Session-Resume). */
+  /** Resumes a paused task (re-enqueued, with a session resume where available). */
   async resume(userId: string, taskId: string) {
     const task = await this.loadOwned(userId, taskId);
     if (task.status !== 'PAUSED') {
-      throw new BadRequestException('Nur pausierte Tasks können fortgesetzt werden.');
+      throw new BadRequestException('Only paused tasks can be resumed.');
     }
     const result = await this.db.query(
       `UPDATE tasks SET status = 'QUEUED', assigned_device_id = NULL WHERE id = $1 RETURNING *`,
@@ -143,11 +143,11 @@ export class TasksService {
     return updated;
   }
 
-  /** Reiht einen fehlgeschlagenen Task erneut ein; eine vorhandene Claude-Session wird dabei fortgesetzt. */
+  /** Re-enqueues a failed task; an existing Claude session is resumed in the process. */
   async retry(userId: string, taskId: string) {
     const task = await this.loadOwned(userId, taskId);
     if (task.status !== 'FAILED') {
-      throw new BadRequestException('Nur fehlgeschlagene Tasks können erneut gestartet werden.');
+      throw new BadRequestException('Only failed tasks can be started again.');
     }
     const result = await this.db.query(
       `UPDATE tasks SET status = 'QUEUED', error = NULL, result = NULL, output_files = NULL,

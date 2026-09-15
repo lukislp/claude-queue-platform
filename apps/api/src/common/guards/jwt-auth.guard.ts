@@ -14,7 +14,7 @@ export class JwtAuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const token = this.extractToken(request);
     if (!token) {
-      throw new UnauthorizedException('Kein gültiges Token vorhanden.');
+      throw new UnauthorizedException('No valid token present.');
     }
     try {
       const payload = await this.jwtService.verifyAsync(token, {
@@ -23,7 +23,7 @@ export class JwtAuthGuard implements CanActivate {
       request.user = { userId: payload.sub, email: payload.email } as AuthUser;
       return true;
     } catch {
-      throw new UnauthorizedException('Token ungültig oder abgelaufen.');
+      throw new UnauthorizedException('Token is invalid or expired.');
     }
   }
 

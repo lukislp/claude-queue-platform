@@ -20,11 +20,10 @@ const IGNORED_DIRS = new Set([
 const MAX_FILES = 100;
 
 /**
- * Listet Dateien im Arbeitsverzeichnis eines Tasks - flach genug, um auf einer großen
- * Repo nicht zu explodieren: bekannte Build-/Abhängigkeitsordner werden übersprungen,
- * versteckte Ordner (z.B. .git) auch, und die Liste wird nach letzter Änderung
- * absteigend sortiert und auf MAX_FILES gekappt, damit zuletzt geänderte Dateien
- * (das eigentliche Task-Ergebnis) immer vorne stehen.
+ * Lists the files in a task's working directory - shallow enough not to explode on a large
+ * repository: known build/dependency directories are skipped, so are hidden directories
+ * (e.g. .git), and the list is sorted by last modification descending and capped at
+ * MAX_FILES, so the most recently changed files (the actual task result) always come first.
  */
 export function listOutputFiles(rootDir: string): OutputFile[] {
   const results: OutputFile[] = [];
@@ -49,7 +48,7 @@ export function listOutputFiles(rootDir: string): OutputFile[] {
           const stat = fs.statSync(full);
           results.push({ path: path.relative(rootDir, full).split(path.sep).join('/'), size: stat.size, mtimeMs: stat.mtimeMs });
         } catch {
-          // Datei zwischen readdir und stat verschwunden - überspringen.
+          // The file disappeared between readdir and stat - skip it.
         }
       }
     }

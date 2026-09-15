@@ -26,7 +26,7 @@ export class DevicesService {
   async confirmPairing(code: string, deviceName: string) {
     const pending = this.pendingCodes.get((code ?? '').toUpperCase());
     if (!pending || pending.expiresAt < Date.now()) {
-      throw new BadRequestException('Pairing-Code ist ungültig oder abgelaufen.');
+      throw new BadRequestException('The pairing code is invalid or expired.');
     }
     this.pendingCodes.delete(code.toUpperCase());
 
@@ -35,7 +35,7 @@ export class DevicesService {
     await this.db.query(
       `INSERT INTO devices (id, user_id, name, device_token_hash, status)
        VALUES ($1, $2, $3, $4, 'OFFLINE')`,
-      [id, pending.userId, deviceName || 'Unbenanntes Gerät', hashToken(rawToken)],
+      [id, pending.userId, deviceName || 'Unnamed device', hashToken(rawToken)],
     );
     return { deviceId: id, deviceToken: rawToken, userId: pending.userId };
   }

@@ -40,9 +40,9 @@ export default function DashboardPage() {
     <AppShell>
       <div className="mb-8 flex items-end justify-between">
         <div>
-          <h1 className="text-xl font-semibold">Projekte</h1>
+          <h1 className="text-xl font-semibold">Projects</h1>
           <p className="text-sm text-[var(--color-text-muted)]">
-            Jedes Projekt hat seine eigene Task-Queue.
+            Every project has its own task queue.
           </p>
         </div>
       </div>
@@ -50,24 +50,24 @@ export default function DashboardPage() {
       <Card className="mb-8 p-4">
         <form onSubmit={handleCreate} className="flex flex-col gap-3 sm:flex-row sm:items-end">
           <div className="flex-1">
-            <Label>Projektname</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="z.B. Blog-Automatisierung" />
+            <Label>Project name</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Blog automation" />
           </div>
           <div className="flex-1">
-            <Label>Beschreibung (optional)</Label>
-            <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Kurze Notiz" />
+            <Label>Description (optional)</Label>
+            <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Short note" />
           </div>
           <Button type="submit" disabled={creating || !name.trim()}>
-            {creating ? 'Erstelle …' : '+ Projekt anlegen'}
+            {creating ? 'Creating …' : '+ Create project'}
           </Button>
         </form>
       </Card>
 
       {projects === null ? (
-        <p className="text-sm text-[var(--color-text-muted)]">Lädt …</p>
+        <p className="text-sm text-[var(--color-text-muted)]">Loading …</p>
       ) : projects.length === 0 ? (
         <Card className="p-8 text-center text-sm text-[var(--color-text-muted)]">
-          Noch keine Projekte. Leg oben dein erstes Projekt an, um Tasks in eine Queue zu schreiben.
+          No projects yet. Create your first one above to start writing tasks into a queue.
         </Card>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">

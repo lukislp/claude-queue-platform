@@ -26,10 +26,9 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
   @WebSocketServer()
   server: Server;
 
-  // Verkettet Status-Updates pro Task, damit zwei schnell hintereinander eintreffende
-  // Nachrichten (z.B. RUNNING gefolgt von FAILED) garantiert in der richtigen
-  // Reihenfolge in der DB landen und sich nicht durch unterschiedliche DB-Latenz
-  // gegenseitig überschreiben können.
+  // Chains status updates per task, so that two messages arriving in quick succession
+  // (e.g. RUNNING followed by FAILED) are guaranteed to reach the database in the right
+  // order and cannot overwrite each other because of differing database latency.
   private taskUpdateChains = new Map<string, Promise<any>>();
 
   private runSerialized(taskId: string, fn: () => Promise<void>) {
@@ -99,8 +98,8 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
     const data = client.data as SocketData;
     if (data?.mode === 'agent' && data.deviceId) {
       await this.devicesService.setStatus(data.deviceId, 'OFFLINE');
-      // Laufende/pausierte Tasks dieses Geräts zurück in die Warteschlange legen,
-      // damit sie automatisch (auf diesem oder einem anderen Gerät) fortgesetzt werden.
+      // Put this device's running/paused tasks back into the queue, so they are resumed
+      // automatically (on this device or another one).
       await this.db.query(
         `UPDATE tasks SET status = 'QUEUED', assigned_device_id = NULL
          WHERE assigned_device_id = $1 AND status IN ('RUNNING','PAUSED_RATE_LIMIT')`,
@@ -166,7 +165,7 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
           body.taskId,
         ],
       );
-      // Bereits vom Nutzer abgebrochene Tasks nicht mehr überschreiben.
+      // Do not overwrite tasks the user has already cancelled.
       if (!result.rows[0]) return;
       const task = toCamel(result.rows[0]);
       if (task.assignedDeviceId) {
@@ -184,11 +183,11 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
   }
 
   /**
-   * Weist so viele wartende Tasks wie möglich freien, online-Geräten des Nutzers zu.
-   * Mehrere Geräte gleichzeitig sind erlaubt (jedes mit eigenem Pairing/Token); die
-   * eigentliche Zuweisung ist eine einzige atomare UPDATE...FOR UPDATE SKIP LOCKED-Anweisung,
-   * damit derselbe Task niemals an zwei Geräte gleichzeitig geht, selbst wenn mehrere
-   * Dispatch-Läufe für denselben Nutzer überlappen.
+   * Assigns as many queued tasks as possible to the user's idle, online devices.
+   * Several devices at once are allowed (each with its own pairing/token); the assignment
+   * itself is a single atomic UPDATE...FOR UPDATE SKIP LOCKED statement, so the same task
+   * never goes to two devices at once, even when several dispatch runs for the same user
+   * overlap.
    */
   async tryDispatchForUser(userId: string) {
     return this.runDispatchSerialized(userId, () => this.dispatchForUser(userId));
@@ -265,7 +264,7 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
     this.server.to(`user:${userId}`).emit('task:update', task);
   }
 
-  /** Fordert das Gerät auf, einen Task abzubrechen (cancel) oder zu pausieren (pause). */
+  /** Asks the device to cancel (cancel) or pause (pause) a task. */
   sendAbortToDevice(deviceId: string, taskId: string, reason: 'cancel' | 'pause') {
     this.server.to(`device:${deviceId}`).emit('task:abort', { taskId, reason });
   }

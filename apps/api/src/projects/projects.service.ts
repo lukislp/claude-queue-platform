@@ -4,7 +4,7 @@ import { DbService } from '../db/db.service';
 import { toCamel, toCamelList } from '../db/mappers';
 import { CreateProjectDto, UpdateProjectDto } from './dto/project.dto';
 
-/** Macht aus einem Projektnamen einen dateisystemtauglichen Ordnernamen. */
+/** Turns a project name into a filesystem-safe folder name. */
 export function toFolderSlug(name: string): string {
   const slug = name
     .toLowerCase()
@@ -14,7 +14,7 @@ export function toFolderSlug(name: string): string {
     // single-character trim is equivalent here and avoids the quadratic backtracking of '-+$'.
     .replace(/^-|-$/g, '')
     .slice(0, 60);
-  return slug || 'projekt';
+  return slug || 'project';
 }
 
 @Injectable()
@@ -35,8 +35,8 @@ export class ProjectsService {
 
   async create(userId: string, dto: CreateProjectDto) {
     const id = uuid();
-    // Ohne explizite Angabe bekommt jedes Projekt einen eigenen Unterordner im
-    // baseDir des Agenten, damit sich Projekte nicht vermischen.
+    // Without an explicit value, every project gets its own subdirectory inside the
+    // agent's baseDir, so projects do not get mixed up.
     let workingDirectory = dto.workingDirectory;
     if (!workingDirectory) {
       const base = toFolderSlug(dto.name);
@@ -61,7 +61,7 @@ export class ProjectsService {
   async getOwned(userId: string, projectId: string) {
     const result = await this.db.query('SELECT * FROM projects WHERE id = $1', [projectId]);
     const project = result.rows[0];
-    if (!project) throw new NotFoundException('Projekt nicht gefunden.');
+    if (!project) throw new NotFoundException('Project not found.');
     if (project.user_id !== userId) throw new ForbiddenException();
     return toCamel(project);
   }
