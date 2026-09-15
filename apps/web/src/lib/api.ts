@@ -20,12 +20,12 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   });
 
   if (!res.ok) {
-    let message = `Fehler ${res.status}`;
+    let message = `Error ${res.status}`;
     try {
       const body = await res.json();
       message = Array.isArray(body.message) ? body.message.join(', ') : body.message ?? message;
     } catch {
-      // Antwort war kein JSON - Standardmeldung verwenden.
+      // The response was not JSON - keep the default message.
     }
     throw new ApiError(message, res.status);
   }

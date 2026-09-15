@@ -7,7 +7,7 @@ import { Button, Card, Input, Textarea } from '@/components/ui';
 import { TaskTicket } from '@/components/task-ticket';
 import { api, ModelOption, Project, Task, TaskStatus } from '@/lib/api';
 
-// Aktive Tasks oben (Laufendes zuerst), beendete unten.
+// Active tasks at the top (running first), finished ones below.
 const STATUS_ORDER: Record<TaskStatus, number> = {
   RUNNING: 0,
   PAUSED_RATE_LIMIT: 1,
@@ -117,7 +117,7 @@ export default function ProjectPage() {
 
   async function handleDeleteProject() {
     if (!project) return;
-    if (!window.confirm(`"${project.name}" wirklich löschen? Alle Tasks darin gehen dabei verloren.`)) return;
+    if (!window.confirm(`Really delete "${project.name}"? Every task in it will be lost.`)) return;
     await api.delete(`/projects/${id}`);
     router.push('/dashboard');
   }
@@ -125,7 +125,7 @@ export default function ProjectPage() {
   const ordered = [...tasks].sort((a, b) => {
     const byStatus = STATUS_ORDER[a.status] - STATUS_ORDER[b.status];
     if (byStatus !== 0) return byStatus;
-    // Aktive in Queue-Reihenfolge (älteste zuerst), beendete mit den neuesten oben.
+    // Active ones in queue order (oldest first), finished ones with the newest on top.
     return FINISHED.includes(a.status)
       ? b.createdAt.localeCompare(a.createdAt)
       : a.createdAt.localeCompare(b.createdAt);
@@ -136,18 +136,18 @@ export default function ProjectPage() {
       <div className="mb-6">
         {editing ? (
           <form onSubmit={handleSaveProject} className="max-w-md space-y-2">
-            <Input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Projektname" />
+            <Input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Project name" />
             <Input
               value={editDescription}
               onChange={(e) => setEditDescription(e.target.value)}
-              placeholder="Beschreibung (optional)"
+              placeholder="Description (optional)"
             />
             <div className="flex gap-2">
               <Button type="submit" disabled={savingProject || !editName.trim()}>
-                {savingProject ? 'Speichere …' : 'Speichern'}
+                {savingProject ? 'Saving …' : 'Save'}
               </Button>
               <Button type="button" variant="secondary" onClick={() => setEditing(false)}>
-                Abbrechen
+                Cancel
               </Button>
             </div>
           </form>
@@ -160,17 +160,17 @@ export default function ProjectPage() {
               )}
               {project && (
                 <p className="mt-1 font-[family-name:var(--font-mono)] text-[11px] text-[var(--color-text-muted)]">
-                  Arbeitsordner: {project.workingDirectory}
+                  Working directory: {project.workingDirectory}
                 </p>
               )}
             </div>
             {project && (
               <div className="flex shrink-0 gap-3 text-xs text-[var(--color-text-muted)]">
                 <button onClick={startEditingProject} className="hover:text-[var(--color-text)]">
-                  Bearbeiten
+                  Edit
                 </button>
                 <button onClick={handleDeleteProject} className="hover:text-[var(--color-failed)]">
-                  Löschen
+                  Delete
                 </button>
               </div>
             )}
@@ -182,19 +182,19 @@ export default function ProjectPage() {
         <form onSubmit={handleSubmit} className="space-y-3">
           <Textarea
             rows={3}
-            placeholder="Was soll Claude tun? Wird der Queue hinzugefügt und automatisch abgearbeitet …"
+            placeholder="What should Claude do? It is added to the queue and worked off automatically …"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
           />
           <div className="flex items-center justify-between gap-3">
             <label className="flex items-center gap-2 text-xs text-[var(--color-text-muted)]">
-              Modell
+              Model
               <select
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
                 className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface-2)] px-2 py-1.5 text-xs text-[var(--color-text)]"
               >
-                <option value="">Standard (CLI-/Konto-Default)</option>
+                <option value="">Default (CLI/account default)</option>
                 {models.map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.displayName}
@@ -203,7 +203,7 @@ export default function ProjectPage() {
               </select>
             </label>
             <Button type="submit" disabled={submitting || !prompt.trim()}>
-              {submitting ? 'Reihe ein …' : 'Zur Queue hinzufügen'}
+              {submitting ? 'Queueing …' : 'Add to queue'}
             </Button>
           </div>
         </form>
@@ -211,7 +211,7 @@ export default function ProjectPage() {
 
       {ordered.length === 0 ? (
         <Card className="p-8 text-center text-sm text-[var(--color-text-muted)]">
-          Noch keine Tasks in der Queue.
+          No tasks in the queue yet.
         </Card>
       ) : (
         <div className="space-y-3">

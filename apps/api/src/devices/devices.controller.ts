@@ -14,7 +14,7 @@ export class DevicesController {
     return this.devicesService.initPairing(user.userId);
   }
 
-  // Wird vom lokalen Agenten aufgerufen - noch ohne User-Login, dafür mit dem Pairing-Code.
+  // Called by the local agent - not signed in as a user yet, authenticated by the pairing code.
   @Post('pair/confirm')
   confirmPairing(@Body() body: { code: string; deviceName: string }) {
     return this.devicesService.confirmPairing(body.code, body.deviceName);

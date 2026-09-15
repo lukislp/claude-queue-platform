@@ -48,7 +48,7 @@ export default function SettingsPage() {
       });
       setApiKey('');
       await loadConnection();
-      setSavedMsg('Gespeichert.');
+      setSavedMsg('Saved.');
     } finally {
       setSaving(false);
     }
@@ -66,14 +66,14 @@ export default function SettingsPage() {
 
   return (
     <AppShell>
-      <h1 className="mb-6 text-xl font-semibold">Einstellungen</h1>
+      <h1 className="mb-6 text-xl font-semibold">Settings</h1>
 
       <Card className="mb-6 p-5">
-        <h2 className="mb-1 font-medium">Claude-Verbindung</h2>
+        <h2 className="mb-1 font-medium">Claude connection</h2>
         <p className="mb-4 text-sm text-[var(--color-text-muted)]">
-          Entscheide, wie Tasks ausgeführt werden - mit deinem eigenen API-Key (serverseitig, rund
-          um die Uhr) oder über einen lokalen Client mit deinem eigenen Claude-Abo (läuft nur,
-          solange dein Gerät online ist).
+          Decide how tasks are executed - with your own API key (server-side, around the clock)
+          or through a local client running on your own Claude subscription (available only
+          while your machine is online).
         </p>
 
         <div className="mb-4 grid gap-3 sm:grid-cols-2">
@@ -85,12 +85,12 @@ export default function SettingsPage() {
                 : 'border-[var(--color-border)] hover:border-[var(--color-text-muted)]'
             }`}
           >
-            <p className="font-medium">API-Key</p>
+            <p className="font-medium">API key</p>
             <p className="mt-1 text-xs text-[var(--color-text-muted)]">
-              Läuft serverseitig, unabhängig von deinem Gerät.
+              Runs server-side, independently of your machine.
             </p>
             {connection?.hasApiKey && mode === 'API_KEY' && (
-              <p className="mt-2 text-xs text-[var(--color-running)]">Key hinterlegt</p>
+              <p className="mt-2 text-xs text-[var(--color-running)]">Key stored</p>
             )}
           </button>
           <button
@@ -101,19 +101,19 @@ export default function SettingsPage() {
                 : 'border-[var(--color-border)] hover:border-[var(--color-text-muted)]'
             }`}
           >
-            <p className="font-medium">Lokaler Client</p>
+            <p className="font-medium">Local client</p>
             <p className="mt-1 text-xs text-[var(--color-text-muted)]">
-              Nutzt dein Claude-Abo über den lokalen Agenten auf deinem Gerät.
+              Uses your Claude subscription through the local agent on your machine.
             </p>
           </button>
         </div>
 
         {mode === 'API_KEY' && (
           <div className="mb-4">
-            <Label>Anthropic API-Key</Label>
+            <Label>Anthropic API key</Label>
             <Input
               type="password"
-              placeholder={connection?.hasApiKey ? '•••••••••••••• (hinterlegt, zum Ändern neu eingeben)' : 'sk-ant-…'}
+              placeholder={connection?.hasApiKey ? '•••••••••••••• (stored, re-enter to change it)' : 'sk-ant-…'}
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
             />
@@ -121,7 +121,7 @@ export default function SettingsPage() {
         )}
 
         <div className="mb-4">
-          <Label>Parallele Tasks ({concurrency})</Label>
+          <Label>Parallel tasks ({concurrency})</Label>
           <input
             type="range"
             min={1}
@@ -140,7 +140,7 @@ export default function SettingsPage() {
 
         <div className="flex items-center gap-3">
           <Button onClick={handleSave} disabled={saving}>
-            {saving ? 'Speichere …' : 'Speichern'}
+            {saving ? 'Saving …' : 'Save'}
           </Button>
           {savedMsg && <span className="text-sm text-[var(--color-running)]">{savedMsg}</span>}
         </div>
@@ -148,25 +148,25 @@ export default function SettingsPage() {
 
       {mode === 'LOCAL_CLI' && (
         <Card className="p-5">
-          <h2 className="mb-1 font-medium">Geräte</h2>
+          <h2 className="mb-1 font-medium">Devices</h2>
           <p className="mb-4 text-sm text-[var(--color-text-muted)]">
-            Installiere den lokalen Agenten auf deinem Rechner und kopple ihn mit einem Code.
+            Install the local agent on your machine and pair it with a code.
           </p>
 
           {pairing ? (
             <div className="mb-4 rounded-md border border-[var(--color-border)] bg-[var(--color-surface-2)] p-4">
-              <p className="text-xs text-[var(--color-text-muted)]">Pairing-Code (5 Minuten gültig)</p>
+              <p className="text-xs text-[var(--color-text-muted)]">Pairing code (valid for 5 minutes)</p>
               <p className="mt-1 font-[family-name:var(--font-mono)] text-2xl tracking-widest text-[var(--color-brand)]">
                 {pairing.code}
               </p>
-              <p className="mt-3 text-xs text-[var(--color-text-muted)]">Auf deinem Rechner ausführen:</p>
+              <p className="mt-3 text-xs text-[var(--color-text-muted)]">Run this on your machine:</p>
               <code className="mt-1 block overflow-x-auto rounded bg-black/30 p-2 font-[family-name:var(--font-mono)] text-xs">
                 npx claude-queue-agent pair --url {process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000'} --code {pairing.code}
               </code>
             </div>
           ) : (
             <Button variant="secondary" onClick={startPairing} className="mb-4">
-              + Neues Gerät koppeln
+              + Pair new device
             </Button>
           )}
 
@@ -191,13 +191,13 @@ export default function SettingsPage() {
                     onClick={() => removeDevice(d.id)}
                     className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-failed)]"
                   >
-                    Entfernen
+                    Remove
                   </button>
                 </div>
               </div>
             ))}
             {devices?.length === 0 && (
-              <p className="text-sm text-[var(--color-text-muted)]">Noch keine Geräte gekoppelt.</p>
+              <p className="text-sm text-[var(--color-text-muted)]">No devices paired yet.</p>
             )}
           </div>
         </Card>

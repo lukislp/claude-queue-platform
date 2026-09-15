@@ -35,10 +35,10 @@ export class ClaudeConnectionService {
   }
 
   /**
-   * Verfügbare Modelle für den Nutzer - nie hartkodiert veraltend:
-   * - API-Key-Modus: live von der Anthropic Models-API (GET /v1/models) mit dem Key des Nutzers.
-   * - CLI-Modus: Aliase (opus/sonnet/haiku), die Claude Code selbst immer auf die
-   *   jeweils aktuelle Modellversion auflöst.
+   * The models available to the user - never hard-coded and going stale:
+   * - API-key mode: live from the Anthropic Models API (GET /v1/models) using the user's key.
+   * - CLI mode: aliases (opus/sonnet/haiku) that Claude Code itself always resolves to the
+   *   current model version.
    */
   async listModels(userId: string) {
     const result = await this.db.query(
@@ -56,7 +56,7 @@ export class ClaudeConnectionService {
         }
         if (models.length > 0) return { source: 'api', models };
       } catch {
-        // Liste nicht abrufbar (z.B. ungültiger Key) - Fallback auf Aliase unten.
+        // The list could not be fetched (e.g. an invalid key) - fall back to the aliases below.
       }
     }
 

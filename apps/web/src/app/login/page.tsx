@@ -24,7 +24,7 @@ export default function LoginPage() {
       await refresh();
       router.push('/dashboard');
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Anmeldung fehlgeschlagen.');
+      setError(err instanceof ApiError ? err.message : 'Sign-in failed.');
     } finally {
       setSubmitting(false);
     }
@@ -33,17 +33,17 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center px-4">
       <Card className="w-full max-w-sm p-6">
-        <h1 className="mb-1 text-lg font-semibold">Anmelden</h1>
+        <h1 className="mb-1 text-lg font-semibold">Sign in</h1>
         <p className="mb-6 text-sm text-[var(--color-text-muted)]">
-          Zugang zu deiner Task-Queue.
+          Access to your task queue.
         </p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label>E-Mail</Label>
+            <Label>Email</Label>
             <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div>
-            <Label>Passwort</Label>
+            <Label>Password</Label>
             <Input
               type="password"
               required
@@ -53,13 +53,13 @@ export default function LoginPage() {
           </div>
           {error && <p className="text-sm text-[var(--color-failed)]">{error}</p>}
           <Button type="submit" disabled={submitting} className="w-full">
-            {submitting ? 'Melde an …' : 'Anmelden'}
+            {submitting ? 'Signing in …' : 'Sign in'}
           </Button>
         </form>
         <p className="mt-4 text-sm text-[var(--color-text-muted)]">
-          Noch kein Konto?{' '}
+          No account yet?{' '}
           <Link href="/register" className="text-[var(--color-brand)] hover:underline">
-            Registrieren
+            Register
           </Link>
         </p>
       </Card>

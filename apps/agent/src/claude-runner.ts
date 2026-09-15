@@ -2,9 +2,9 @@ import { spawn, spawnSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 
-// Auf Windows installiert npm die CLI als .cmd/.ps1-Shim, den spawn() ohne Shell nicht
-// starten kann (und .cmd via shell:true macht das Quoting des Prompts unzuverlässig).
-// Wir lösen daher einmalig die tatsächliche Ausführungsdatei auf.
+// On Windows, npm installs the CLI as a .cmd/.ps1 shim that spawn() cannot start without a
+// shell (and running the .cmd with shell:true makes quoting of the prompt unreliable).
+// So we resolve the real executable once and cache it.
 let cachedInvocation: { cmd: string; argPrefix: string[] } | undefined;
 
 export function resolveClaudeInvocation(): { cmd: string; argPrefix: string[] } {
@@ -17,14 +17,14 @@ export function resolveClaudeInvocation(): { cmd: string; argPrefix: string[] } 
   const found = spawnSync('where.exe', ['claude'], { encoding: 'utf8' });
   const candidates = (found.stdout ?? '').split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
 
-  // 1) Direkt eine .exe im PATH (native Installation)
+  // 1) A plain .exe on PATH (native installation)
   const exe = candidates.find((c) => c.toLowerCase().endsWith('.exe'));
   if (exe) {
     cachedInvocation = { cmd: exe, argPrefix: [] };
     return cachedInvocation;
   }
 
-  // 2) npm-Shim (.cmd): auf die dahinterliegende Installation auflösen
+  // 2) npm shim (.cmd): resolve it to the installation behind it
   const shim = candidates.find((c) => c.toLowerCase().endsWith('.cmd'));
   if (shim) {
     const pkgDir = path.join(path.dirname(shim), 'node_modules', '@anthropic-ai', 'claude-code');
@@ -40,7 +40,7 @@ export function resolveClaudeInvocation(): { cmd: string; argPrefix: string[] } 
     }
   }
 
-  // Fallback: unverändert versuchen (führt ggf. zum bisherigen Fehlerpfad)
+  // Fallback: try it unchanged (may end up on the previous error path)
   cachedInvocation = { cmd: 'claude', argPrefix: [] };
   return cachedInvocation;
 }
@@ -54,14 +54,14 @@ export interface RunResult {
   abortReason?: 'cancel' | 'pause';
 }
 
-// Laufende Claude-Prozesse pro Task, damit sie auf Nutzerwunsch beendet werden können.
+// Running Claude processes per task, so they can be terminated on the user's request.
 interface ActiveRun {
   child: import('child_process').ChildProcess;
   abortReason?: 'cancel' | 'pause';
 }
 const activeRuns = new Map<string, ActiveRun>();
 
-/** Beendet den laufenden Prozess eines Tasks. Liefert false, wenn gerade keiner läuft. */
+/** Terminates a task's running process. Returns false if none is running right now. */
 export function abortRun(taskId: string, reason: 'cancel' | 'pause'): boolean {
   const run = activeRuns.get(taskId);
   if (!run) return false;
@@ -70,17 +70,17 @@ export function abortRun(taskId: string, reason: 'cancel' | 'pause'): boolean {
   return true;
 }
 
-// Best-effort Erkennung von Usage-/Rate-Limit-Meldungen in der Claude-Code-Ausgabe.
-// Claude Code meldet erreichte Limits als Text in stdout/stderr; das genaue Format kann
-// sich je nach installierter Version leicht unterscheiden - ggf. hier anpassen.
-// Wichtig: nur gegen echte Fehlertexte testen, nie gegen komplette JSON-Events -
-// Token-Zähler, UUIDs oder Signaturen enthalten sonst schnell z.B. "429" als Ziffernfolge.
+// Best-effort detection of usage/rate-limit messages in the Claude Code output.
+// Claude Code reports a limit it has hit as text on stdout/stderr; the exact wording can
+// differ slightly between installed versions - adjust here if needed.
+// Important: only match against real error text, never against whole JSON events - token
+// counters, UUIDs or signatures easily contain e.g. "429" as a digit sequence.
 export const RATE_LIMIT_PATTERNS = [/usage limit/i, /rate limit/i, /try again later/i, /\b429\b/];
-const DEFAULT_RATE_LIMIT_BACKOFF_MS = 30 * 60 * 1000; // Standard-Backoff: 30 Minuten
+const DEFAULT_RATE_LIMIT_BACKOFF_MS = 30 * 60 * 1000; // Default backoff: 30 minutes
 
 /**
- * Versucht, eine Reset-Zeit aus der Limit-Meldung zu extrahieren.
- * Unterstützt "resets at 14:32" sowie das CLI-Format "usage limit reached|<epoch>".
+ * Tries to extract a reset time from the limit message.
+ * Supports "resets at 14:32" as well as the CLI format "usage limit reached|<epoch>".
  */
 export function tryExtractResetTime(text: string): Date | undefined {
   const epochMatch = text.match(/\|(\d{10,13})\b/);
@@ -95,7 +95,7 @@ export function tryExtractResetTime(text: string): Date | undefined {
   return isNaN(parsed.getTime()) ? undefined : parsed;
 }
 
-/** Extrahiert aus einem stream-json-Event nur die fehlerrelevanten Texte. */
+/** Extracts only the error-relevant texts from a stream-json event. */
 export function errorTextsFromEvent(parsed: any): string[] {
   const texts: string[] = [];
   if (typeof parsed?.error === 'string') texts.push(parsed.error);
@@ -113,7 +113,7 @@ export function runClaudeTask(
   onLog: (line: string) => void,
 ): Promise<RunResult> {
   return new Promise((resolve) => {
-    // --verbose ist bei "-p" + "--output-format stream-json" von Claude Code vorgeschrieben.
+    // Claude Code requires --verbose when "-p" is combined with "--output-format stream-json".
     const args = ['-p', prompt, '--output-format', 'stream-json', '--verbose', '--permission-mode', 'acceptEdits'];
     if (resumeSessionId) {
       args.push('--resume', resumeSessionId);
@@ -128,11 +128,11 @@ export function runClaudeTask(
       child = spawn(invocation.cmd, [...invocation.argPrefix, ...args], {
         cwd: workingDirectory,
         env: process.env,
-        // stdin schließen, sonst wartet die CLI auf Piped-Input
+        // Close stdin, otherwise the CLI waits for piped input
         stdio: ['ignore', 'pipe', 'pipe'],
       });
     } catch (err: any) {
-      resolve({ status: 'failed', error: `Konnte 'claude' nicht starten: ${err.message}` });
+      resolve({ status: 'failed', error: `Could not start 'claude': ${err.message}` });
       return;
     }
 
@@ -198,11 +198,11 @@ export function runClaudeTask(
       if (code === 0) {
         resolve({
           status: 'completed',
-          result: resultText || '(Kein strukturiertes Textergebnis erkannt - siehe vollständige Logs im Dashboard.)',
+          result: resultText || '(No structured text result detected - see the full logs in the dashboard.)',
           sessionId,
         });
       } else {
-        resolve({ status: 'failed', error: stderrBuffer || `claude beendet mit Exit-Code ${code}`, sessionId });
+        resolve({ status: 'failed', error: stderrBuffer || `claude exited with code ${code}`, sessionId });
       }
     });
 
@@ -210,7 +210,7 @@ export function runClaudeTask(
       activeRuns.delete(taskId);
       resolve({
         status: 'failed',
-        error: `Konnte 'claude' nicht ausführen: ${err.message}. Ist Claude Code installiert und im PATH? ('claude login' ausgeführt?)`,
+        error: `Could not run 'claude': ${err.message}. Is Claude Code installed and on PATH? (Have you run 'claude login'?)`,
       });
     });
   });

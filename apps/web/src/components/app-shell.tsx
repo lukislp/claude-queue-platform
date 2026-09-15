@@ -17,7 +17,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   if (loading || !user) {
     return (
       <main className="flex min-h-screen items-center justify-center">
-        <p className="font-[family-name:var(--font-mono)] text-sm text-[var(--color-text-muted)]">Lädt …</p>
+        <p className="font-[family-name:var(--font-mono)] text-sm text-[var(--color-text-muted)]">Loading …</p>
       </main>
     );
   }
@@ -48,14 +48,14 @@ export function AppShell({ children }: { children: ReactNode }) {
               Claude Queue
             </Link>
             <nav className="flex items-center gap-1">
-              {navItem('/dashboard', 'Projekte')}
-              {navItem('/settings', 'Einstellungen')}
+              {navItem('/dashboard', 'Projects')}
+              {navItem('/settings', 'Settings')}
             </nav>
           </div>
           <div className="flex items-center gap-3 text-sm text-[var(--color-text-muted)]">
             <span className="font-[family-name:var(--font-mono)]">{user.email}</span>
             <button onClick={() => logout().then(() => router.push('/login'))} className="hover:text-[var(--color-text)]">
-              Abmelden
+              Sign out
             </button>
           </div>
         </div>
