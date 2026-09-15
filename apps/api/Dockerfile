@@ -10,7 +10,12 @@ WORKDIR /app
 ENV NODE_ENV=production
 COPY apps/api/package*.json ./
 RUN npm ci --omit=dev --no-audit --no-fund
-COPY --from=build /app/dist ./dist
-COPY migrations /app/migrations
+COPY --from=build --chown=node:node /app/dist ./dist
+COPY --chown=node:node migrations /app/migrations
+# /app itself stays root-owned and read-only for the app; only the directories the process
+# actually touches are handed over. The base image ships "node" with UID/GID 1000, which is
+# what k8s/04-api.yaml pins via runAsUser/runAsGroup.
+RUN chown node:node /app
 EXPOSE 4000
+USER node
 CMD ["node", "dist/main.js"]
