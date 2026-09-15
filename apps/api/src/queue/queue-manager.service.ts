@@ -50,7 +50,7 @@ export class QueueManagerService implements OnModuleDestroy {
         { connection: redisConnection(), concurrency },
       );
       worker.on('failed', (job, err) => {
-        this.logger.error(`Task-Job fehlgeschlagen (${job?.id}): ${err.message}`);
+        this.logger.error(`Task job failed (${job?.id}): ${err.message}`);
       });
       this.workers.set(userId, worker);
     } else {

@@ -46,7 +46,7 @@ export class DbService implements OnModuleInit, OnModuleDestroy {
     for (const file of files) {
       const sql = fs.readFileSync(path.join(dir, file), 'utf8');
       await this.pool.query(sql);
-      this.logger.log(`Migration angewendet: ${file}`);
+      this.logger.log(`Migration applied: ${file}`);
     }
   }
 }
