@@ -1,3 +1,10 @@
+## [1.2.32](https://github.com/lukislp/claude-queue-platform/compare/v1.2.31...v1.2.32) (2026-09-16)
+
+
+### Bug Fixes
+
+* **test:** stop asserting uniqueness for one-byte tokens ([#82](https://github.com/lukislp/claude-queue-platform/issues/82)) ([955f035](https://github.com/lukislp/claude-queue-platform/commit/955f035411ec58c352188a959d3ce9326868916e))
+
 ## [1.2.31](https://github.com/lukislp/claude-queue-platform/compare/v1.2.30...v1.2.31) (2026-09-15)
 
 
