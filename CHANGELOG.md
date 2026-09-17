@@ -1,3 +1,11 @@
+## [1.2.33](https://github.com/lukislp/claude-queue-platform/compare/v1.2.32...v1.2.33) (2026-09-17)
+
+
+### Bug Fixes
+
+* **deps:** bump eslint-config-next ([bac3430](https://github.com/lukislp/claude-queue-platform/commit/bac34301b7d76e91de6175bab7a4d75399b7659f))
+* **deps:** bump next from 16.3.4 to 16.3.5 in /apps/web ([61b15c3](https://github.com/lukislp/claude-queue-platform/commit/61b15c3e0d8ea393766d5059db5f04d0146849aa))
+
 ## [1.2.32](https://github.com/lukislp/claude-queue-platform/compare/v1.2.31...v1.2.32) (2026-09-16)
 
 
