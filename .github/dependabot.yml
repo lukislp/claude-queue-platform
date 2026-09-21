@@ -7,6 +7,8 @@ updates:
       interval: weekly
     commit-message:
       prefix: "fix(ci)"
+    reviewers:
+      - "lukislp"
   - package-ecosystem: npm
     directories:
       - /apps/agent
@@ -34,6 +36,8 @@ updates:
           - "version-update:semver-major"
     commit-message:
       prefix: "fix(deps)"
+    reviewers:
+      - "lukislp"
   - package-ecosystem: docker
     directories:
       - /apps/api
@@ -46,3 +50,5 @@ updates:
           - "version-update:semver-major"
     commit-message:
       prefix: "fix(docker)"
+    reviewers:
+      - "lukislp"
