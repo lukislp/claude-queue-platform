@@ -4,18 +4,19 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: daily
     commit-message:
       prefix: "fix(ci)"
     reviewers:
       - "lukislp"
+    open-pull-requests-limit: 2
   - package-ecosystem: npm
     directories:
       - /apps/agent
       - /apps/api
       - /apps/web
     schedule:
-      interval: weekly
+      interval: daily
     groups:
       dev:
         dependency-type: development
@@ -38,12 +39,13 @@ updates:
       prefix: "fix(deps)"
     reviewers:
       - "lukislp"
+    open-pull-requests-limit: 2
   - package-ecosystem: docker
     directories:
       - /apps/api
       - /apps/web
     schedule:
-      interval: weekly
+      interval: daily
     ignore:
       - dependency-name: "node"
         update-types:
@@ -52,3 +54,4 @@ updates:
       prefix: "fix(docker)"
     reviewers:
       - "lukislp"
+    open-pull-requests-limit: 2
