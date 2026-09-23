@@ -23,8 +23,8 @@
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
-    "@types/node": "^26.6.1",
-    "fast-check": "^4.10.1",
+    "@types/node": "^26.6.2",
+    "fast-check": "^4.10.2",
     "jest": "^30.5.2",
     "ts-jest": "^29.2.5",
     "typescript": "^5.6.2"
