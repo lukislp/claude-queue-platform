@@ -11,6 +11,7 @@ resources:
   - 01-secrets-sealed.yaml
   - 01b-r2-backup-credentials-sealed.yaml
   - 02-postgres.yaml
+  - 02b-objectstore.yaml
   - 06-routes.yaml
   - 07-netpol.yaml
   - 08-scheduled-backup.yaml

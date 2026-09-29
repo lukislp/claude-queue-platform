@@ -55,25 +55,30 @@ spec:
   # be on disk at snapshot time. With barman archiving, every committed transaction reaches
   # R2 within archive_timeout, and recovery can target any point inside the retention window.
   #
-  # Own prefix inside the existing "studylifebackup" bucket rather than the bucket root that
-  # studylife-scale uses: barman lays out <destinationPath>/<serverName>/{base,wals}, and
-  # CNPG's retentionPolicy is enforced per barman server, so two clusters sharing a root
-  # would have their retention windows applied against the same tree. A separate prefix keeps
-  # the two archives completely disjoint. Deliberately NOT a separate bucket: the R2 API
-  # token is scoped to the buckets that exist today, so a new bucket would need a Cloudflare-
-  # side change and a token rotation for no benefit here.
-  #
-  # retentionPolicy 30d matches studylife-scale. The database is tiny (single-digit MB), so a
+  # WHERE the archive goes (bucket, prefix, credentials, compression) and HOW LONG it is kept
+  # (retentionPolicy 30d) are defined on the ObjectStore in k8s/02b-objectstore.yaml, not in
+  # this file - the Barman Cloud Plugin keeps retention on the ObjectStore, not on the Cluster.
+  # The reasoning behind those values, for the record: own prefix inside the existing
+  # "studylifebackup" bucket rather than the bucket root that studylife-scale uses, because
+  # barman lays out <destinationPath>/<serverName>/{base,wals} and retention is enforced per
+  # barman server, so two clusters sharing a root would have their retention windows applied
+  # against the same tree. A separate prefix keeps the two archives completely disjoint.
+  # Deliberately NOT a separate bucket: the R2 API token is scoped to the buckets that exist
+  # today, so a new bucket would need a Cloudflare-side change and a token rotation for no
+  # benefit here. 30d matches studylife-scale; the database is tiny (single-digit MB), so a
   # month of daily gzip-compressed base backups plus their WAL segments stays far inside R2's
   # free tier, and 30d is the window that actually makes a bad migration or an accidental
   # DELETE recoverable rather than just a node failure.
-  backup:
-    barmanObjectStore:
-      destinationPath: "s3://studylifebackup/claude-queue"
-      endpointURL: "https://44ffca74c2d2f27b33389c8f54f95edf.r2.cloudflarestorage.com"
-      s3Credentials:
-        accessKeyId: { name: r2-backup-credentials, key: ACCESS_KEY_ID }
-        secretAccessKey: { name: r2-backup-credentials, key: ACCESS_SECRET_KEY }
-      wal: { compression: gzip }
-      data: { compression: gzip }
-    retentionPolicy: "30d"
+  #
+  # WAL archiving + base backups via the Barman Cloud Plugin (replaces the in-tree
+  # spec.backup.barmanObjectStore block, removed in CNPG 1.30). One atomic edit with the
+  # removal of that block - a Cluster with neither is a Cluster that is not archiving.
+  # serverName is pinned explicitly: it defaults to the Cluster name on both paths, but if it
+  # ever drifts barman silently starts a NEW tree in the bucket and the 30d recovery window
+  # restarts at zero while archiving keeps reporting healthy. Must stay "claude-queue-pg".
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: r2-claude-queue
+        serverName: claude-queue-pg

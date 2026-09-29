@@ -11,7 +11,7 @@ released `api`/`web` version into their image lines (over the semantic-release d
 nothing in the cluster holds a write token for this repo), `k8s/flux-deploy/kustomization.yaml`
 is the subset Flux (read-only `k8s/flux/01-git-source.yaml`) actually applies. Everything else (`00-namespace.yaml`,
 `01-secrets-sealed.yaml`, `01b-r2-backup-credentials-sealed.yaml`, `02-postgres.yaml`,
-`06-routes.yaml`, `07-netpol.yaml`, `08-scheduled-backup.yaml`) stays **bootstrap-only** - applied once by hand, never touched by Flux (homelab-infra's
+`02b-objectstore.yaml`, `06-routes.yaml`, `07-netpol.yaml`, `08-scheduled-backup.yaml`) stays **bootstrap-only** - applied once by hand, never touched by Flux (homelab-infra's
 `flux/01-reconciler-rbac.yaml` least-privilege ClusterRole doesn't grant those kinds).
 
 ## Bootstrap (once)
@@ -19,7 +19,10 @@ is the subset Flux (read-only `k8s/flux/01-git-source.yaml`) actually applies. E
 ```bash
 export KUBECONFIG=$env:USERPROFILE\.kube\studylife-config   # PowerShell
 
-# 1. the bootstrap-only resources (namespace, SealedSecret, CNPG cluster, routes, NetworkPolicies)
+# 1. the bootstrap-only resources (namespace, SealedSecrets, CNPG cluster + its Barman Cloud
+#    Plugin ObjectStore, routes, NetworkPolicies, ScheduledBackup). The plugin itself
+#    (homelab-infra cluster/12-barman-cloud-plugin.yaml) must already be installed, or the
+#    barmancloud.cnpg.io ObjectStore CRD does not exist and the apply fails.
 kubectl apply -k k8s/
 
 # 2. wire this repo into Flux - additive, doesn't touch any other app's objects
