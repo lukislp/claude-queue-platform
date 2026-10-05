@@ -7,6 +7,12 @@ RUN npm run build
 
 FROM node:24-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6
 WORKDIR /app
+# Pull the Debian security fix for perl-base (CVE-2026-13221, CVE-2026-42496, CVE-2026-8376,
+# fixed in 5.36.0-7+deb12u4) until the pinned node:24-slim digest ships it; the Trivy gate
+# fails on CRITICAL otherwise. Drop this once Dependabot bumps the base image past it.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends --only-upgrade perl-base \
+    && rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV=production
 COPY apps/api/package*.json ./
 RUN npm ci --omit=dev --no-audit --no-fund
