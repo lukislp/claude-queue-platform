@@ -44,7 +44,9 @@ jobs:
         working-directory: apps/${{ matrix.app }}
       # Known-vulnerable npm packages fail the build (same level as studylife-capture/focus);
       # the Trivy scan after the release only covers the two container images, not apps/agent.
-      - run: npm audit --audit-level=high
+      # --omit=dev: GHSA-vfj7-8cjw-p6xm (braces, no patched release) only reaches the build via
+      # the eslint-config-next lint chain, which is never shipped.
+      - run: npm audit --omit=dev --audit-level=high
         working-directory: apps/${{ matrix.app }}
 
   # ------------------------------------------------------------------
