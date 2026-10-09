@@ -1,4 +1,4 @@
-FROM node:24-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6 AS build
+FROM node:24-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20 AS build
 WORKDIR /app
 COPY apps/web/package*.json ./
 RUN npm ci --no-audit --no-fund
@@ -7,7 +7,7 @@ ARG NEXT_PUBLIC_API_URL=http://localhost:4000
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN npm run build
 
-FROM node:24-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6
+FROM node:24-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20
 WORKDIR /app
 # Pull the Debian security fix for perl-base (CVE-2026-13221, CVE-2026-42496, CVE-2026-8376,
 # fixed in 5.36.0-7+deb12u4) until the pinned node:24-slim digest ships it; the Trivy gate
