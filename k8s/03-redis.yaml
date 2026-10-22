@@ -63,7 +63,7 @@ spec:
           # Tag AND digest on purpose: the digest is what gets pulled, the tag is the human- and
           # Renovate-readable version. Renovate's kubernetes manager (renovate.json) moves both
           # together from here, so updates stay a reviewable pull request.
-          image: redis:8.10.2-alpine@sha256:615b4cedaff0c1437a1548acae4222572df8c021eeb7382d64cb8b5e3a13ac7a
+          image: redis:8.10.2-alpine@sha256:0bf6577d7774e592b29d093e3ac9390eb91e13d72c21e506afce736de5e0eeb0
           args: ["--appendonly", "yes"]
           ports:
             - containerPort: 6379
