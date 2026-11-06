@@ -124,7 +124,9 @@ CloudNativePG and SealedSecrets:
 
 The pipeline ([`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml)) builds all three
 apps on every push and pull request. On `main` it additionally versions and releases
-automatically via semantic-release (Conventional Commits): the images
+automatically through the lktec-bot release module (Conventional Commits; the rules live in
+`.github/lktec-bot.yml`, the App credentials are the secrets `LKTEC_BOT_APP_ID` and
+`LKTEC_BOT_PRIVATE_KEY`): the images
 `ghcr.io/lukislp/claude-queue-api` and `ghcr.io/lukislp/claude-queue-web` are built natively
 for amd64 and arm64, merged into a multi-arch manifest and scanned with Trivy.
 

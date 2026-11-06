@@ -7,7 +7,7 @@ Onboarded into the cluster-wide [homelab-infra](https://github.com/lukislp/homel
 Flux GitOps pattern - this repo owns its own Flux wiring (`k8s/flux/`), rather than a
 central repo managing it on this repo's behalf. `03-redis.yaml`, `04-api.yaml` and
 `05-web.yaml` are **Flux-managed**: the release pipeline's `deploy-bump` job writes every
-released `api`/`web` version into their image lines (over the semantic-release deploy key, so
+released `api`/`web` version into their image lines (over a write-enabled deploy key, so
 nothing in the cluster holds a write token for this repo), `k8s/flux-deploy/kustomization.yaml`
 is the subset Flux (read-only `k8s/flux/01-git-source.yaml`) actually applies. Everything else (`00-namespace.yaml`,
 `01-secrets-sealed.yaml`, `01b-r2-backup-credentials-sealed.yaml`, `02-postgres.yaml`,
