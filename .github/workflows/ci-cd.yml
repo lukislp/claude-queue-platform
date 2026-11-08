@@ -56,7 +56,7 @@ jobs:
   get-version:
     needs: [build]
     if: github.event_name == 'push'
-    uses: lukislp/lktec-bot/.github/workflows/release.yml@96409228fae388950b700878bfc36af519292d64 # v0.7.1
+    uses: lukislp/lktec-bot/.github/workflows/release.yml@d2e0693df66fa10167181e6c3844cdc2032f4399 # v0.7.2
     with:
       dry-run: true
     secrets:
@@ -66,7 +66,7 @@ jobs:
   release:
     needs: [get-version]
     if: github.event_name == 'push' && needs.get-version.outputs.released == 'true'
-    uses: lukislp/lktec-bot/.github/workflows/release.yml@96409228fae388950b700878bfc36af519292d64 # v0.7.1
+    uses: lukislp/lktec-bot/.github/workflows/release.yml@d2e0693df66fa10167181e6c3844cdc2032f4399 # v0.7.2
     secrets:
       app-id: ${{ secrets.LKTEC_BOT_APP_ID }}
       private-key: ${{ secrets.LKTEC_BOT_PRIVATE_KEY }}
@@ -285,7 +285,7 @@ jobs:
     concurrency:
       group: claude-queue-platform-release-chain
       cancel-in-progress: false
-    uses: lukislp/lktec-bot/.github/workflows/deploy-bump.yml@96409228fae388950b700878bfc36af519292d64 # v0.7.1
+    uses: lukislp/lktec-bot/.github/workflows/deploy-bump.yml@d2e0693df66fa10167181e6c3844cdc2032f4399 # v0.7.2
     with:
       version: ${{ needs.release.outputs.version }}
       images: 'ghcr\.io/lukislp/(claude-queue-api|claude-queue-web)'
